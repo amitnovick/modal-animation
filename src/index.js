@@ -123,7 +123,6 @@ const App = () => {
           state.matches("opened")
         ) {
           const firstImageRect = gridImgageRef.current.getBoundingClientRect();
-          console.log("firstImageRect:", firstImageRect);
           return { firstImageRect };
         } else {
           return { firstImageRect: null };
@@ -133,36 +132,34 @@ const App = () => {
         if (firstImageRect === null) {
           return;
         } else {
-          console.log("pollo");
-
           console.log("modalImageRef.current:", modalImageRef.current);
 
-          // const lastImageRect = modalImageRef.current.getBoundingClientRect();
-          // const deltaX = firstImageRect.left - lastImageRect.left;
-          // const deltaY = firstImageRect.top - lastImageRect.top;
-          // const deltaW = firstImageRect.width / lastImageRect.width;
-          // const deltaH = firstImageRect.height / lastImageRect.height;
+          const lastImageRect = modalImageRef.current.getBoundingClientRect();
+          const deltaX = firstImageRect.left - lastImageRect.left;
+          const deltaY = firstImageRect.top - lastImageRect.top;
+          const deltaW = firstImageRect.width / lastImageRect.width;
+          const deltaH = firstImageRect.height / lastImageRect.height;
 
-          // const imageAnimation = gridImgageRef.current.animate(
-          //   [
-          //     {
-          //       transformOrigin: "top left",
-          //       transform: `
-          //       scale(${deltaW}, ${deltaH})
-          //       translate(${deltaX}, ${deltaY})
-          //     `
-          //     },
-          //     { transformOrigin: "top left", transform: "none" }
-          //   ],
-          //   {
-          //     // timing options
-          //     duration: 600,
-          //     easing: "ease-in-out",
-          //     fill: "both"
-          //   }
-          // );
+          const imageAnimation = gridImgageRef.current.animate(
+            [
+              {
+                transformOrigin: "top left",
+                transform: `
+                scale(${deltaW}, ${deltaH})
+                translate(${deltaX}, ${deltaY})
+              `
+              },
+              { transformOrigin: "top left", transform: "none" }
+            ],
+            {
+              // timing options
+              duration: 600,
+              easing: "ease-in-out",
+              fill: "both"
+            }
+          );
 
-          // imageAnimation.onfinish = () => this.setState({});
+          imageAnimation.onfinish = () => send("FINISHED_ENTERING");
         }
       }
     },
@@ -244,7 +241,6 @@ const App = () => {
                   alt={imageDescription}
                   onClick={() => {
                     send("OPEN_MODAL");
-                    console.log("sent open modal");
                     setExtendedState(previous => ({
                       ...previous,
                       chosenItemId: itemId

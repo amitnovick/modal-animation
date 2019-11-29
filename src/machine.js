@@ -11,7 +11,11 @@ const machine = Machine({
     opened: {
       initial: "entering",
       states: {
-        entering: {},
+        entering: {
+          on: {
+            FINISHED_ENTERING: "settled"
+          }
+        },
         settled: {}
       },
       on: {
