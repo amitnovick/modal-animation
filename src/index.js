@@ -119,7 +119,7 @@ const App = () => {
     {
       getSnapshot: ({ prevProps, props }) => {
         if (
-          prevProps.shouldFlip !== props.shouldFlip &&
+          prevProps.isModalOpen !== props.isModalOpen &&
           state.matches("opened")
         ) {
           const firstImageRect = gridImgageRef.current.getBoundingClientRect();
@@ -232,7 +232,10 @@ const App = () => {
                 imageDescription
               }
             ]) => (
-              <UseSnapshot key={itemId} shouldFlip={isModalOpen}>
+              <UseSnapshot
+                key={itemId}
+                isModalOpen={isModalOpen && chosenItemId === itemId}
+              >
                 <img
                   key={itemId}
                   ref={gridImgageRef}
@@ -253,6 +256,7 @@ const App = () => {
           )}
         </div>
         <ItemModal
+          item={isModalOpen ? items[chosenItemId] : null}
           isModalOpen={isModalOpen}
           closeModal={() => {
             send("CLOSE_MODAL");

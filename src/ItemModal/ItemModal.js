@@ -23,7 +23,7 @@ const customStyles = {
 
 class ItemModal extends React.PureComponent {
   render() {
-    const { isModalOpen, closeModal, modalImageRef } = this.props;
+    const { isModalOpen, item, closeModal, modalImageRef } = this.props;
 
     return (
       <Modal
@@ -41,10 +41,14 @@ class ItemModal extends React.PureComponent {
           ×
         </button>
 
-        <div
-          ref={modalImageRef}
-          style={{ width: 100, height: 100, backgroundColor: "purple" }}
-        />
+        {item !== null ? (
+          <img
+            ref={modalImageRef}
+            className={styles["image"]}
+            src={item.image.src}
+            alt="artwork"
+          />
+        ) : null}
       </Modal>
     );
   }
