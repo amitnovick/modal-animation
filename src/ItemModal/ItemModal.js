@@ -23,54 +23,37 @@ const customStyles = {
 
 class ItemModal extends React.PureComponent {
   render() {
-    const { isModalOpen, closeModal, item, modalImageRef } = this.props;
+    const {
+      isModalOpen,
+      closeModal,
+      onCompletedOpening,
+      modalImageRef
+    } = this.props;
 
-    console.log("*** <ItemModal> ***");
-    console.log("ItemModal rendered");
-    console.log("item:", item);
-    console.log("modalImageRef:", modalImageRef);
-    console.log("*** </ItemModal> ***");
     return (
-      <div
-        ref={modalImageRef}
-        style={{ width: 100, height: 100, backgroundColor: "purple" }}
-      />
+      <Modal
+        isOpen={isModalOpen}
+        onAfterOpen={onCompletedOpening}
+        onRequestClose={closeModal}
+        style={customStyles}
+      >
+        <button className={styles["close-button"]} onClick={closeModal}>
+          ×
+        </button>
+
+        <div
+          ref={modalImageRef}
+          style={{ width: 100, height: 100, backgroundColor: "purple" }}
+        />
+      </Modal>
     );
-    // return (
-    //   <Modal
-    //     isOpen={true} /* isModalOpen */
-    //     onRequestClose={closeModal}
-    //     style={customStyles}
-    //     contentLabel="Example Modal"
-    //   >
-    //     <button className={styles["close-button"]} onClick={closeModal}>
-    //       ×
-    //     </button>
-
-    //     <div
-    //       ref={modalImageRef}
-    //       style={{ width: 100, height: 100, backgroundColor: "purple" }}
-    //     />
-
-    //     {/* {isModalOpen ? (
-    //       <img
-    //         ref={modalImageRef}
-    //         className={styles["track-image"]}
-    //         src={item.image.src}
-    //         alt="artwork"
-    //       />
-    //     ) : (
-    //       <img ref={modalImageRef} alt="artwork" />
-    //     )} */}
-    //   </Modal>
-    // );
   }
 }
 
 ItemModal.propTypes = {
   isModalOpen: PropTypes.bool.isRequired,
   closeModal: PropTypes.func.isRequired,
-  item: PropTypes.object,
+  onCompletedOpening: PropTypes.func.isRequired,
   modalImageRef: PropTypes.any
 };
 

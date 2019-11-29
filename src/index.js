@@ -118,47 +118,51 @@ const App = () => {
   const UseSnapshot = useSnapshot(
     {
       getSnapshot: ({ prevProps, props }) => {
-        if (prevProps.isModalOpen !== props.isModalOpen) {
+        if (
+          prevProps.shouldFlip !== props.shouldFlip &&
+          state.matches("opened")
+        ) {
           const firstImageRect = gridImgageRef.current.getBoundingClientRect();
           console.log("firstImageRect:", firstImageRect);
           return { firstImageRect };
+        } else {
+          return { firstImageRect: null };
         }
       },
-      layoutEffect: snapshot => {
-        if (!snapshot) {
+      layoutEffect: ({ firstImageRect }) => {
+        if (firstImageRect === null) {
           return;
         } else {
           console.log("pollo");
 
-          const { firstImageRect } = snapshot;
           console.log("modalImageRef.current:", modalImageRef.current);
 
-          const lastImageRect = modalImageRef.current.getBoundingClientRect();
-          const deltaX = firstImageRect.left - lastImageRect.left;
-          const deltaY = firstImageRect.top - lastImageRect.top;
-          const deltaW = firstImageRect.width / lastImageRect.width;
-          const deltaH = firstImageRect.height / lastImageRect.height;
+          // const lastImageRect = modalImageRef.current.getBoundingClientRect();
+          // const deltaX = firstImageRect.left - lastImageRect.left;
+          // const deltaY = firstImageRect.top - lastImageRect.top;
+          // const deltaW = firstImageRect.width / lastImageRect.width;
+          // const deltaH = firstImageRect.height / lastImageRect.height;
 
-          const imageAnimation = gridImgageRef.current.animate(
-            [
-              {
-                transformOrigin: "top left",
-                transform: `
-                scale(${deltaW}, ${deltaH})
-                translate(${deltaX}, ${deltaY})
-              `
-              },
-              { transformOrigin: "top left", transform: "none" }
-            ],
-            {
-              // timing options
-              duration: 600,
-              easing: "ease-in-out",
-              fill: "both"
-            }
-          );
+          // const imageAnimation = gridImgageRef.current.animate(
+          //   [
+          //     {
+          //       transformOrigin: "top left",
+          //       transform: `
+          //       scale(${deltaW}, ${deltaH})
+          //       translate(${deltaX}, ${deltaY})
+          //     `
+          //     },
+          //     { transformOrigin: "top left", transform: "none" }
+          //   ],
+          //   {
+          //     // timing options
+          //     duration: 600,
+          //     easing: "ease-in-out",
+          //     fill: "both"
+          //   }
+          // );
 
-          imageAnimation.onfinish = () => this.setState({});
+          // imageAnimation.onfinish = () => this.setState({});
         }
       }
     },
@@ -208,8 +212,6 @@ const App = () => {
 
   const { items, chosenItemId, hasFinishedLoading } = extendedState;
 
-  const isModalOpen = state.matches("opened");
-
   console.log("extendedState:", extendedState);
 
   console.log("state.value:", state.value);
@@ -219,7 +221,7 @@ const App = () => {
   } else {
     return (
       <>
-        {/* <div className="grid">
+        <div className="grid">
           {Object.entries(items).map(
             ([
               itemId,
@@ -228,8 +230,12 @@ const App = () => {
                 imageDescription
               }
             ]) => (
-              <UseSnapshot key={itemId} isModalOpen={isModalOpen}>
+              <UseSnapshot
+                key={itemId}
+                shouldFlip={state.matches("beforeOpened")}
+              >
                 <img
+                  key={itemId}
                   ref={gridImgageRef}
                   className="image"
                   src={imageSrc}
@@ -246,12 +252,15 @@ const App = () => {
               </UseSnapshot>
             )
           )}
-        </div> */}
+        </div>
         <ItemModal
-          item={isModalOpen ? items[chosenItemId] : null}
-          isModalOpen={isModalOpen}
+          isModalOpen={state.matches("beforeOpened") || state.matches("opened")}
           closeModal={() => {
             send("CLOSE_MODAL");
+          }}
+          onCompletedOpening={() => {
+            send("MODAL_COMPLETED_OPENING");
+            console.log("sent modal completed opening");
           }}
           modalImageRef={modalImageRef}
         />
