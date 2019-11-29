@@ -1,0 +1,21 @@
+* {
+  position: relative;
+}
+
+.grid {
+  width: 100%;
+  min-width: 300px; /* Text shouldn't overflow */
+  max-width: 960px;
+
+  margin: 10rem auto 0 auto;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-gap: 30px;
+}
+
+.image {
+  height: 200px;
+  width: 100%;
+  object-fit: cover;
+}
