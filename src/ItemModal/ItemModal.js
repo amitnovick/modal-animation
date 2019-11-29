@@ -41,14 +41,12 @@ class ItemModal extends React.PureComponent {
           ×
         </button>
 
-        {item !== null ? (
-          <img
-            ref={modalImageRef}
-            className={styles["image"]}
-            src={item.image.src}
-            alt="artwork"
-          />
-        ) : null}
+        <img
+          ref={modalImageRef}
+          className={styles["image"]}
+          src={item !== null ? item.image.src : undefined}
+          alt="artwork"
+        />
       </Modal>
     );
   }

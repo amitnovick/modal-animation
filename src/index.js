@@ -112,7 +112,16 @@ const App = () => {
     hasFinishedLoading: false
   });
 
-  const gridImgageRef = React.useRef();
+  const gridImagesRef = React.useRef(
+    Object.keys(extendedState.items).reduce(
+      (accumulated, itemId) => ({
+        ...accumulated,
+        [itemId]: React.createRef()
+      }),
+      {}
+    )
+  );
+
   const modalImageRef = React.useRef();
 
   const UseSnapshot = useSnapshot(
@@ -122,8 +131,14 @@ const App = () => {
           prevProps.isModalOpen !== props.isModalOpen &&
           state.matches("opened")
         ) {
-          const firstImageRect = gridImgageRef.current.getBoundingClientRect();
-          return { firstImageRect };
+          console.log(
+            "gridImgageRef.current",
+            gridImagesRef.current[chosenItemId].current
+          );
+          const firstImageRect = gridImagesRef.current[
+            chosenItemId
+          ].current.getBoundingClientRect();
+          return { firstImageRect: firstImageRect };
         } else {
           return { firstImageRect: null };
         }
@@ -140,13 +155,16 @@ const App = () => {
           const deltaW = firstImageRect.width / lastImageRect.width;
           const deltaH = firstImageRect.height / lastImageRect.height;
 
-          const imageAnimation = gridImgageRef.current.animate(
+          // gridImagesRef.current[
+          //   chosenItemId
+          // ].current.animate
+          const imageAnimation = modalImageRef.current.animate(
             [
               {
                 transformOrigin: "top left",
                 transform: `
                 scale(${deltaW}, ${deltaH})
-                translate(${deltaX}, ${deltaY})
+                translate(${deltaX}px, ${deltaY}px)
               `
               },
               { transformOrigin: "top left", transform: "none" }
@@ -211,9 +229,10 @@ const App = () => {
 
   const isModalOpen = state.matches("opened");
 
+  console.log("*** <App RENDER> ***");
   console.log("extendedState:", extendedState);
-
   console.log("state.value:", state.value);
+  console.log("*** </App RENDER> ***");
 
   if (!hasFinishedLoading) {
     return <h2> Loading... </h2>;
@@ -235,7 +254,7 @@ const App = () => {
               >
                 <img
                   key={itemId}
-                  ref={gridImgageRef}
+                  ref={gridImagesRef.current[itemId]}
                   className="image"
                   src={imageSrc}
                   alt={imageDescription}
