@@ -5,12 +5,7 @@ const machine = Machine({
   states: {
     closed: {
       on: {
-        OPEN_MODAL: "beforeOpened"
-      }
-    },
-    beforeOpened: {
-      on: {
-        MODAL_COMPLETED_OPENING: "opened"
+        OPEN_MODAL: "opened"
       }
     },
     opened: {

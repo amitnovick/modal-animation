@@ -23,19 +23,19 @@ const customStyles = {
 
 class ItemModal extends React.PureComponent {
   render() {
-    const {
-      isModalOpen,
-      closeModal,
-      onCompletedOpening,
-      modalImageRef
-    } = this.props;
+    const { isModalOpen, closeModal, modalImageRef } = this.props;
 
     return (
       <Modal
-        isOpen={isModalOpen}
-        onAfterOpen={onCompletedOpening}
+        isOpen={true}
         onRequestClose={closeModal}
-        style={customStyles}
+        style={{
+          ...customStyles,
+          overlay: {
+            ...customStyles.overlay,
+            display: isModalOpen ? "initial" : "none"
+          }
+        }}
       >
         <button className={styles["close-button"]} onClick={closeModal}>
           ×
@@ -53,7 +53,6 @@ class ItemModal extends React.PureComponent {
 ItemModal.propTypes = {
   isModalOpen: PropTypes.bool.isRequired,
   closeModal: PropTypes.func.isRequired,
-  onCompletedOpening: PropTypes.func.isRequired,
   modalImageRef: PropTypes.any
 };
 

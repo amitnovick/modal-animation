@@ -212,6 +212,8 @@ const App = () => {
 
   const { items, chosenItemId, hasFinishedLoading } = extendedState;
 
+  const isModalOpen = state.matches("opened");
+
   console.log("extendedState:", extendedState);
 
   console.log("state.value:", state.value);
@@ -230,10 +232,7 @@ const App = () => {
                 imageDescription
               }
             ]) => (
-              <UseSnapshot
-                key={itemId}
-                shouldFlip={state.matches("beforeOpened")}
-              >
+              <UseSnapshot key={itemId} shouldFlip={isModalOpen}>
                 <img
                   key={itemId}
                   ref={gridImgageRef}
@@ -254,13 +253,9 @@ const App = () => {
           )}
         </div>
         <ItemModal
-          isModalOpen={state.matches("beforeOpened") || state.matches("opened")}
+          isModalOpen={isModalOpen}
           closeModal={() => {
             send("CLOSE_MODAL");
-          }}
-          onCompletedOpening={() => {
-            send("MODAL_COMPLETED_OPENING");
-            console.log("sent modal completed opening");
           }}
           modalImageRef={modalImageRef}
         />
