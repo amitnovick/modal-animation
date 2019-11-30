@@ -183,12 +183,6 @@ const App = () => {
           const deltaW = firstImageRect.width / lastImageRect.width;
           const deltaH = firstImageRect.height / lastImageRect.height;
 
-          // lastImageElement.style.transition = "";
-          // lastImageElement.style.transform = `
-          // translate(${deltaX}px, ${deltaY}px)
-          // scale(${deltaW}, ${deltaH})
-          // `;
-
           const imageAnimation = lastImageElement.animate(
             [
               {
@@ -202,7 +196,7 @@ const App = () => {
             ],
             {
               // timing options
-              duration: 600,
+              duration: 400,
               easing: "ease-in-out",
               fill: "both"
             }
