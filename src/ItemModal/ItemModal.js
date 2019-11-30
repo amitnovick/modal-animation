@@ -23,7 +23,13 @@ const customStyles = {
 
 class ItemModal extends React.PureComponent {
   render() {
-    const { modalState, item, closeModal, modalImageRef } = this.props;
+    const {
+      modalState,
+      item,
+      closeModal,
+      modalImageRef,
+      properties
+    } = this.props;
 
     return (
       <Modal
@@ -34,9 +40,16 @@ class ItemModal extends React.PureComponent {
           overlay: {
             ...customStyles.overlay,
             display: modalState.matches("closed") ? "none" : undefined,
-            visibility: modalState.matches("closed->opened")
-              ? "hidden"
-              : undefined
+            visibility:
+              modalState.matches("closed->opened") ||
+              modalState.matches("opened->closed")
+                ? "hidden"
+                : undefined
+          },
+          content: {
+            ...customStyles.content,
+            height: modalState.matches("opened->closed") ? "100%" : undefined,
+            width: modalState.matches("opened->closed") ? "100%" : undefined
           }
         }}
       >
@@ -45,15 +58,19 @@ class ItemModal extends React.PureComponent {
         </button>
 
         <img
+          {...{
+            style: modalState.matches("opened->closed")
+              ? {
+                  visibility: "visible",
+                  position: "absolute",
+                  top: properties.top,
+                  left: properties.left,
+                  width: properties.width,
+                  height: properties.height
+                }
+              : {}
+          }}
           ref={modalImageRef}
-          // style={{
-          //   visibility: modalState.matches("closed->opened")
-          //     ? "visible"
-          //     : undefined,
-          //   position: modalState.matches("closed->opened")
-          //     ? "absolute"
-          //     : undefined
-          // }}
           className={styles["image"]}
           src={item !== null ? item.image.src : undefined}
           alt="artwork"
@@ -65,8 +82,10 @@ class ItemModal extends React.PureComponent {
 
 ItemModal.propTypes = {
   modalState: PropTypes.object.isRequired,
+  item: PropTypes.object,
   closeModal: PropTypes.func.isRequired,
-  modalImageRef: PropTypes.any
+  modalImageRef: PropTypes.any,
+  properties: PropTypes.object
 };
 
 export default ItemModal;

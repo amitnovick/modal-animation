@@ -170,7 +170,7 @@ const App = () => {
           return;
         } else {
           console.log("firstImageRect", firstImageRect);
-          const lastImageElement = state.matches("closed->opened")
+          const animatedElement = state.matches("closed->opened")
             ? gridImagesRef.current[chosenItemId].current
             : state.matches("opened->closed")
             ? modalImageRef.current
@@ -183,7 +183,7 @@ const App = () => {
           const deltaW = firstImageRect.width / lastImageRect.width;
           const deltaH = firstImageRect.height / lastImageRect.height;
 
-          const imageAnimation = lastImageElement.animate(
+          const imageAnimation = animatedElement.animate(
             [
               {
                 transformOrigin: "top left",
@@ -196,12 +196,11 @@ const App = () => {
             ],
             {
               // timing options
-              duration: 400,
+              duration: 300,
               easing: "ease-in-out",
               fill: "both"
             }
           );
-
           imageAnimation.onfinish = state.matches("closed->opened")
             ? () => send("FINISHED_SLIDE_IN_ANIMATION")
             : state.matches("opened->closed")
@@ -310,11 +309,13 @@ const App = () => {
                     src={imageSrc}
                     alt={imageDescription}
                     onClick={() => {
-                      send("OPEN_MODAL");
-                      setExtendedState(previous => ({
-                        ...previous,
-                        chosenItemId: itemId
-                      }));
+                      if (state.matches("closed")) {
+                        send("OPEN_MODAL");
+                        setExtendedState(previous => ({
+                          ...previous,
+                          chosenItemId: itemId
+                        }));
+                      }
                     }}
                   />
                 </div>
@@ -326,9 +327,26 @@ const App = () => {
           item={state.matches("closed") ? null : items[chosenItemId]}
           modalState={state}
           closeModal={() => {
-            send("CLOSE_MODAL");
+            if (state.matches("opened") || state.matches("closed->opened")) {
+              console.log("stop!");
+              const gridImageRef = gridImagesRef.current[chosenItemId];
+              const gridImageRect = gridImageRef.current.getBoundingClientRect();
+              setExtendedState(prev => {
+                return {
+                  ...prev,
+                  properties: {
+                    top: gridImageRect.top,
+                    left: gridImageRect.left,
+                    width: gridImageRect.width,
+                    height: gridImageRect.height
+                  }
+                };
+              });
+              send("CLOSE_MODAL");
+            }
           }}
           modalImageRef={modalImageRef}
+          properties={extendedState.properties}
         />
       </>
     );
