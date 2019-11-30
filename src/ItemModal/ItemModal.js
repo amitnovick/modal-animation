@@ -28,7 +28,7 @@ class ItemModal extends React.PureComponent {
       item,
       closeModal,
       modalImageRef,
-      properties
+      modalImageProperties
     } = this.props;
 
     return (
@@ -40,11 +40,10 @@ class ItemModal extends React.PureComponent {
           overlay: {
             ...customStyles.overlay,
             display: modalState.matches("closed") ? "none" : undefined,
-            visibility:
-              modalState.matches("closed->opened") ||
-              modalState.matches("opened->closed")
-                ? "hidden"
-                : undefined
+            opacity: modalState.matches("closed->opened") ? 0 : undefined,
+            visibility: modalState.matches("opened->closed")
+              ? "hidden"
+              : undefined
           },
           content: {
             ...customStyles.content,
@@ -63,10 +62,10 @@ class ItemModal extends React.PureComponent {
               ? {
                   visibility: "visible",
                   position: "absolute",
-                  top: properties.top,
-                  left: properties.left,
-                  width: properties.width,
-                  height: properties.height
+                  top: modalImageProperties.top,
+                  left: modalImageProperties.left,
+                  width: modalImageProperties.width,
+                  height: modalImageProperties.height
                 }
               : {}
           }}
@@ -85,7 +84,7 @@ ItemModal.propTypes = {
   item: PropTypes.object,
   closeModal: PropTypes.func.isRequired,
   modalImageRef: PropTypes.any,
-  properties: PropTypes.object
+  modalImageProperties: PropTypes.object
 };
 
 export default ItemModal;

@@ -104,12 +104,43 @@ function preloadImage(url) {
   });
 }
 
+const performLastInvertPlay = ({ element, first, duration = 400 }) => {
+  const last = element.getBoundingClientRect();
+
+  const deltaX = first.left - last.left;
+  const deltaY = first.top - last.top;
+  const deltaW = first.width / last.width;
+  const deltaH = first.height / last.height;
+
+  const animation = element.animate(
+    [
+      {
+        transformOrigin: "top left",
+        transform: `
+        translate(${deltaX}px, ${deltaY}px)
+        scale(${deltaW}, ${deltaH})
+      `
+      },
+      { transformOrigin: "top left", transform: "none" }
+    ],
+    {
+      // timing options
+      duration: duration,
+      easing: "ease-in-out",
+      fill: "both"
+    }
+  );
+
+  return animation;
+};
+
 const App = () => {
   const [extendedState, setExtendedState] = React.useState({
     items: initialItems,
     chosenItemId: null,
     hasFinishedLoading: false,
-    properties: null
+    gridImageProperties: null,
+    modalImageProperties: null
   });
 
   const [state, send] = useMachine(machine, {
@@ -121,7 +152,7 @@ const App = () => {
           console.log("updatePropertiesUsingModalImage: rect:", rect);
           return {
             ...prev,
-            properties: {
+            gridImageProperties: {
               top: rect.top,
               left: rect.left,
               width: rect.width,
@@ -149,14 +180,26 @@ const App = () => {
   const UseSnapshot = useSnapshot(
     {
       getSnapshot: ({ prevProps, props }) => {
-        if (prevProps.flipKey !== props.flipKey) {
+        if (chosenItemId === props.itemId && prevProps.state !== props.state) {
           if (state.matches("closed->opened.slidingIn")) {
             const firstImageRect = gridImagesRef.current[
               chosenItemId
             ].current.getBoundingClientRect();
             return { firstImageRect: firstImageRect };
-          } else if (state.matches("opened->closed")) {
+          } else if (
+            state.matches("opened->closed") &&
+            prevProps.state.matches("opened")
+          ) {
             const firstImageRect = modalImageRef.current.getBoundingClientRect();
+            return { firstImageRect: firstImageRect };
+          } else if (
+            state.matches("opened->closed") &&
+            prevProps.state.matches("closed->opened")
+          ) {
+            console.log("called?");
+            const firstImageRect = gridImagesRef.current[
+              chosenItemId
+            ].current.getBoundingClientRect();
             return { firstImageRect: firstImageRect };
           } else {
             return { firstImageRect: null };
@@ -169,43 +212,23 @@ const App = () => {
         if (firstImageRect === null) {
           return;
         } else {
-          console.log("firstImageRect", firstImageRect);
-          const animatedElement = state.matches("closed->opened")
-            ? gridImagesRef.current[chosenItemId].current
-            : state.matches("opened->closed")
-            ? modalImageRef.current
-            : null;
-
-          const lastImageRect = extendedState.properties;
-          console.log("lastImageRect", lastImageRect);
-          const deltaX = firstImageRect.left - lastImageRect.left;
-          const deltaY = firstImageRect.top - lastImageRect.top;
-          const deltaW = firstImageRect.width / lastImageRect.width;
-          const deltaH = firstImageRect.height / lastImageRect.height;
-
-          const imageAnimation = animatedElement.animate(
-            [
-              {
-                transformOrigin: "top left",
-                transform: `
-                translate(${deltaX}px, ${deltaY}px)
-                scale(${deltaW}, ${deltaH})
-              `
-              },
-              { transformOrigin: "top left", transform: "none" }
-            ],
-            {
-              // timing options
-              duration: 300,
-              easing: "ease-in-out",
-              fill: "both"
-            }
-          );
-          imageAnimation.onfinish = state.matches("closed->opened")
-            ? () => send("FINISHED_SLIDE_IN_ANIMATION")
-            : state.matches("opened->closed")
-            ? () => send("FINISHED_SLIDE_OUT_ANIMATION")
-            : null;
+          if (state.matches("closed->opened.slidingIn")) {
+            const animation = performLastInvertPlay({
+              element: gridImagesRef.current[chosenItemId].current,
+              first: firstImageRect
+            });
+            animation.onfinish = () => send("FINISHED_SLIDE_IN_ANIMATION");
+            animation.oncancel = () => console.log("cancelled!");
+          } else if (state.matches("opened->closed")) {
+            console.log("first:", firstImageRect);
+            const animation = performLastInvertPlay({
+              element: modalImageRef.current,
+              first: firstImageRect,
+              duration: 300
+            });
+            animation.oncancel = () => console.log("cancelled!");
+            animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+          }
         }
       }
     },
@@ -280,14 +303,7 @@ const App = () => {
                 imageDescription
               }
             ]) => (
-              <UseSnapshot
-                key={itemId}
-                flipKey={
-                  (state.matches("closed->opened.slidingIn") ||
-                    state.matches("opened->closed")) &&
-                  chosenItemId === itemId
-                }
-              >
+              <UseSnapshot key={itemId} itemId={itemId} state={state}>
                 <div className="image-container">
                   <img
                     {...{
@@ -296,10 +312,10 @@ const App = () => {
                         chosenItemId === itemId
                           ? {
                               position: "absolute",
-                              top: extendedState.properties.top,
-                              left: extendedState.properties.left,
-                              width: extendedState.properties.width,
-                              height: extendedState.properties.height
+                              top: extendedState.gridImageProperties.top,
+                              left: extendedState.gridImageProperties.left,
+                              width: extendedState.gridImageProperties.width,
+                              height: extendedState.gridImageProperties.height
                             }
                           : {}
                     }}
@@ -334,7 +350,7 @@ const App = () => {
               setExtendedState(prev => {
                 return {
                   ...prev,
-                  properties: {
+                  modalImageProperties: {
                     top: gridImageRect.top,
                     left: gridImageRect.left,
                     width: gridImageRect.width,
@@ -346,7 +362,7 @@ const App = () => {
             }
           }}
           modalImageRef={modalImageRef}
-          properties={extendedState.properties}
+          modalImageProperties={extendedState.modalImageProperties}
         />
       </>
     );

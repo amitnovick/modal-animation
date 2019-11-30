@@ -27,16 +27,15 @@ const machine = Machine({
         }
       }
     },
-    opened: {
-      on: {
-        CLOSE_MODAL: "opened->closed"
-      }
-    },
+    opened: {},
     "opened->closed": {
       on: {
         FINISHED_SLIDE_OUT_ANIMATION: "closed"
       }
     }
+  },
+  on: {
+    CLOSE_MODAL: "opened->closed"
   }
 });
 
