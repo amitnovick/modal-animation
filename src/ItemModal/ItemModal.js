@@ -23,7 +23,7 @@ const customStyles = {
 
 class ItemModal extends React.PureComponent {
   render() {
-    const { isModalOpen, item, closeModal, modalImageRef } = this.props;
+    const { modalState, item, closeModal, modalImageRef } = this.props;
 
     return (
       <Modal
@@ -33,7 +33,10 @@ class ItemModal extends React.PureComponent {
           ...customStyles,
           overlay: {
             ...customStyles.overlay,
-            display: isModalOpen ? "initial" : "none"
+            display: modalState.matches("closed") ? "none" : undefined,
+            visibility: modalState.matches("closed->opened")
+              ? "hidden"
+              : undefined
           }
         }}
       >
@@ -43,6 +46,14 @@ class ItemModal extends React.PureComponent {
 
         <img
           ref={modalImageRef}
+          // style={{
+          //   visibility: modalState.matches("closed->opened")
+          //     ? "visible"
+          //     : undefined,
+          //   position: modalState.matches("closed->opened")
+          //     ? "absolute"
+          //     : undefined
+          // }}
           className={styles["image"]}
           src={item !== null ? item.image.src : undefined}
           alt="artwork"
@@ -53,7 +64,7 @@ class ItemModal extends React.PureComponent {
 }
 
 ItemModal.propTypes = {
-  isModalOpen: PropTypes.bool.isRequired,
+  modalState: PropTypes.object.isRequired,
   closeModal: PropTypes.func.isRequired,
   modalImageRef: PropTypes.any
 };
