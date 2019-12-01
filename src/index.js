@@ -105,11 +105,24 @@ function preloadImage(url) {
   });
 }
 
-const performLastInvertPlay = ({ element, last, first, duration = 400 }) => {
+const performLastInvertPlay = ({ element, last, first }) => {
   const deltaX = first.left - last.left;
   const deltaY = first.top - last.top;
-  const deltaW = first.width / last.width;
-  const deltaH = first.height / last.height;
+  const deltaW = last.width === 0 ? 0 : first.width / last.width; // working around a bug that occurs when switching between responsive layout and normal layout in devtools
+  const deltaH = last.height === 0 ? 0 : first.height / last.height; // working around a bug that occurs when switching between responsive layout and normal layout in devtools
+
+  const centerFirstX = first.left + first.width / 2;
+  const centerFirstY = first.top + first.height / 2;
+
+  const centerLastX = last.left + last.width / 2;
+  const centerLastY = last.top + last.height / 2;
+
+  const distance = Math.sqrt(
+    Math.pow(centerFirstX - centerLastX, 2) +
+      Math.pow(centerFirstY - centerLastY, 2)
+  );
+
+  const duration = distance < 200 ? 200 : 400; // If the grid item is really close, make duration short
 
   const animation = element.animate(
     [
@@ -208,12 +221,14 @@ const App = () => {
   React.useLayoutEffect(() => {
     if (previousState) {
       if (state.matches("closed->opened.slidingIn")) {
+        const last = modalImageRef.current.getBoundingClientRect();
+        console.log("modalImageRef: last:", last);
         const animation = performLastInvertPlay({
           element: portalImageRef.current,
           first: gridImagesRef.current[
             extendedState.chosenItemId
           ].current.getBoundingClientRect(),
-          last: modalImageRef.current.getBoundingClientRect()
+          last: last
         });
         animation.onfinish = () => send("FINISHED_SLIDE_IN_ANIMATION");
       } else if (state.matches("opened->closed")) {
