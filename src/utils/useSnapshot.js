@@ -10,8 +10,8 @@ function useSnapshot({ getSnapshot, layoutEffect }) {
         getSnapshotBeforeUpdate(prevProps) {
           return myArgs.current.getSnapshot({ prevProps, props: this.props });
         }
-        componentDidUpdate(props, state, snapshot) {
-          myArgs.current.layoutEffect(snapshot);
+        componentDidUpdate(prevProps, prevState, snapshot) {
+          myArgs.current.layoutEffect({ prevProps, snapshot });
         }
         render() {
           return this.props.children;

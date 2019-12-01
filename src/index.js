@@ -187,38 +187,34 @@ const App = () => {
     {
       getSnapshot: ({ prevProps, props }) => {
         if (chosenItemId === props.itemId && prevProps.state !== props.state) {
-          if (state.matches("closed->opened.slidingIn")) {
-            const firstImageRect = gridImagesRef.current[
-              chosenItemId
-            ].current.getBoundingClientRect();
-            return { firstImageRect: firstImageRect };
-          } else if (
-            state.matches("opened->closed") &&
-            prevProps.state.matches("opened")
-          ) {
-            const firstImageRect = modalImageRef.current.getBoundingClientRect();
-            return { firstImageRect: firstImageRect, prevProps };
-          } else if (
+          if (
             state.matches("opened->closed") &&
             prevProps.state.matches("closed->opened")
           ) {
-            const firstImageRect = portalImgRef.current.getBoundingClientRect();
-            return { firstImageRect: firstImageRect, prevProps };
+            return {
+              shouldRun: true,
+              portalImageRect: portalImgRef.current.getBoundingClientRect()
+            };
           } else {
-            return { firstImageRect: null };
+            return { shouldRun: true };
           }
         } else {
-          return { firstImageRect: null };
+          return { shouldRun: false };
         }
       },
-      layoutEffect: ({ firstImageRect, prevProps }) => {
-        if (firstImageRect === null) {
+      layoutEffect: ({
+        prevProps,
+        snapshot: { shouldRun, portalImageRect }
+      }) => {
+        if (!shouldRun) {
           return;
         } else {
           if (state.matches("closed->opened.slidingIn")) {
             const animation = performLastInvertPlay({
               element: portalImgRef.current,
-              first: firstImageRect,
+              first: gridImagesRef.current[
+                chosenItemId
+              ].current.getBoundingClientRect(),
               last: modalImageRef.current.getBoundingClientRect()
             });
             animation.onfinish = () => send("FINISHED_SLIDE_IN_ANIMATION");
@@ -226,7 +222,7 @@ const App = () => {
             if (prevProps.state.matches("opened")) {
               const animation = performLastInvertPlay({
                 element: portalImgRef.current,
-                first: firstImageRect,
+                first: modalImageRef.current.getBoundingClientRect(),
                 last: gridImagesRef.current[
                   chosenItemId
                 ].current.getBoundingClientRect()
@@ -235,10 +231,11 @@ const App = () => {
             } else if (prevProps.state.matches("closed->opened")) {
               const animation = performLastInvertPlay({
                 element: portalImgRef.current,
-                first: firstImageRect,
+                first: portalImageRect,
                 last: gridImagesRef.current[
                   chosenItemId
-                ].current.getBoundingClientRect()
+                ].current.getBoundingClientRect(),
+                duration: 400
               });
               animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
             }
@@ -377,6 +374,7 @@ const App = () => {
         />
         <Portal>
           <img
+            className="image"
             ref={portalImgRef}
             {...{
               src: shouldDisplayPortalImage

@@ -40,9 +40,7 @@ class ItemModal extends React.PureComponent {
               : undefined
           },
           content: {
-            ...customStyles.content,
-            height: modalState.matches("opened->closed") ? "100%" : undefined,
-            width: modalState.matches("opened->closed") ? "100%" : undefined
+            ...customStyles.content
           }
         }}
       >
