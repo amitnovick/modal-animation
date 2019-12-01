@@ -377,7 +377,7 @@ const App = () => {
               style: shouldDisplayPortalImage
                 ? {
                     ...extendedState.portalImageProperties,
-                    position: "absolute"
+                    position: "fixed"
                   }
                 : { display: "none" }
             }}
