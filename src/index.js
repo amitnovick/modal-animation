@@ -3,10 +3,10 @@ import ReactDOM from "react-dom";
 import "normalize.css";
 import "./index.scss";
 import ItemModal from "./ItemModal/ItemModal";
-import useSnapshot from "./utils/useSnapshot";
 import machine from "./machine";
 import { useMachine } from "@xstate/react";
 import usePortal from "./utils/usePortal";
+import usePrevious from "./utils/usePrevious";
 
 const initialItems = {
   FvVO3o6Gw8g: {
@@ -172,6 +172,8 @@ const App = () => {
     }
   });
 
+  const previousState = usePrevious(state);
+
   const gridImagesRef = React.useRef(
     Object.keys(extendedState.items).reduce(
       (accumulated, itemId) => ({
@@ -184,54 +186,46 @@ const App = () => {
 
   const modalImageRef = React.useRef();
 
-  const UseSnapshot = useSnapshot(
-    {
-      getSnapshot: ({ prevProps, props }) => {
-        if (chosenItemId === props.itemId && prevProps.state !== props.state) {
-          return true;
-        } else {
-          return false;
-        }
-      },
-      layoutEffect: ({ prevProps, snapshot: shouldRun }) => {
-        if (!shouldRun) {
-          return;
-        } else {
-          if (state.matches("closed->opened.slidingIn")) {
-            const animation = performLastInvertPlay({
-              element: portalImageRef.current,
-              first: gridImagesRef.current[
-                chosenItemId
-              ].current.getBoundingClientRect(),
-              last: modalImageRef.current.getBoundingClientRect()
-            });
-            animation.onfinish = () => send("FINISHED_SLIDE_IN_ANIMATION");
-          } else if (state.matches("opened->closed")) {
-            if (prevProps.state.matches("opened")) {
-              const animation = performLastInvertPlay({
-                element: portalImageRef.current,
-                first: modalImageRef.current.getBoundingClientRect(),
-                last: gridImagesRef.current[
-                  chosenItemId
-                ].current.getBoundingClientRect()
-              });
-              animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
-            } else if (prevProps.state.matches("closed->opened")) {
-              const animation = performLastInvertPlay({
-                element: portalImageRef.current,
-                first: extendedState.previousPortalImageProperties,
-                last: gridImagesRef.current[
-                  chosenItemId
-                ].current.getBoundingClientRect()
-              });
-              animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
-            }
-          }
+  React.useLayoutEffect(() => {
+    if (previousState) {
+      if (state.matches("closed->opened.slidingIn")) {
+        const animation = performLastInvertPlay({
+          element: portalImageRef.current,
+          first: gridImagesRef.current[
+            extendedState.chosenItemId
+          ].current.getBoundingClientRect(),
+          last: modalImageRef.current.getBoundingClientRect()
+        });
+        animation.onfinish = () => send("FINISHED_SLIDE_IN_ANIMATION");
+      } else if (state.matches("opened->closed")) {
+        if (previousState.matches("opened")) {
+          const animation = performLastInvertPlay({
+            element: portalImageRef.current,
+            first: modalImageRef.current.getBoundingClientRect(),
+            last: gridImagesRef.current[
+              extendedState.chosenItemId
+            ].current.getBoundingClientRect()
+          });
+          animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+        } else if (previousState.matches("closed->opened")) {
+          const animation = performLastInvertPlay({
+            element: portalImageRef.current,
+            first: extendedState.previousPortalImageProperties,
+            last: gridImagesRef.current[
+              extendedState.chosenItemId
+            ].current.getBoundingClientRect()
+          });
+          animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
         }
       }
-    },
-    []
-  );
+    }
+  }, [
+    state,
+    previousState,
+    extendedState.chosenItemId,
+    extendedState.previousPortalImageProperties,
+    send
+  ]);
 
   const fetchImages = async () => {
     const preloadedImages = await Promise.all(
@@ -305,34 +299,32 @@ const App = () => {
                 imageDescription
               }
             ]) => (
-              <UseSnapshot key={itemId} itemId={itemId} state={state}>
-                <div className="image-container">
-                  <img
-                    {...{
-                      style:
-                        shouldDisplayPortalImage && chosenItemId === itemId
-                          ? {
-                              visibility: "hidden"
-                            }
-                          : {}
-                    }}
-                    key={itemId}
-                    ref={gridImagesRef.current[itemId]}
-                    className="image"
-                    src={imageSrc}
-                    alt={imageDescription}
-                    onClick={() => {
-                      if (state.matches("closed")) {
-                        send("OPEN_MODAL");
-                        setExtendedState(previous => ({
-                          ...previous,
-                          chosenItemId: itemId
-                        }));
-                      }
-                    }}
-                  />
-                </div>
-              </UseSnapshot>
+              <div key={itemId} className="image-container">
+                <img
+                  {...{
+                    style:
+                      shouldDisplayPortalImage && chosenItemId === itemId
+                        ? {
+                            visibility: "hidden"
+                          }
+                        : {}
+                  }}
+                  key={itemId}
+                  ref={gridImagesRef.current[itemId]}
+                  className="image"
+                  src={imageSrc}
+                  alt={imageDescription}
+                  onClick={() => {
+                    if (state.matches("closed")) {
+                      send("OPEN_MODAL");
+                      setExtendedState(previous => ({
+                        ...previous,
+                        chosenItemId: itemId
+                      }));
+                    }
+                  }}
+                />
+              </div>
             )
           )}
         </div>
