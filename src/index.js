@@ -104,8 +104,9 @@ function preloadImage(url) {
   });
 }
 
-const performLastInvertPlay = ({ element, first, duration = 400 }) => {
-  const last = element.getBoundingClientRect();
+const performLastInvertPlay = ({ element, last, first, duration = 400 }) => {
+  console.log("first:", first);
+  console.log("last:", last);
 
   const deltaX = first.left - last.left;
   const deltaY = first.top - last.top;
@@ -175,6 +176,16 @@ const App = () => {
     )
   );
 
+  const gridImagesContainersRef = React.useRef(
+    Object.keys(extendedState.items).reduce(
+      (accumulated, itemId) => ({
+        ...accumulated,
+        [itemId]: React.createRef()
+      }),
+      {}
+    )
+  );
+
   const modalImageRef = React.useRef();
 
   const UseSnapshot = useSnapshot(
@@ -191,7 +202,7 @@ const App = () => {
             prevProps.state.matches("opened")
           ) {
             const firstImageRect = modalImageRef.current.getBoundingClientRect();
-            return { firstImageRect: firstImageRect };
+            return { firstImageRect: firstImageRect, prevProps };
           } else if (
             state.matches("opened->closed") &&
             prevProps.state.matches("closed->opened")
@@ -200,7 +211,7 @@ const App = () => {
             const firstImageRect = gridImagesRef.current[
               chosenItemId
             ].current.getBoundingClientRect();
-            return { firstImageRect: firstImageRect };
+            return { firstImageRect: firstImageRect, prevProps };
           } else {
             return { firstImageRect: null };
           }
@@ -208,26 +219,44 @@ const App = () => {
           return { firstImageRect: null };
         }
       },
-      layoutEffect: ({ firstImageRect }) => {
+      layoutEffect: ({ firstImageRect, prevProps }) => {
         if (firstImageRect === null) {
           return;
         } else {
           if (state.matches("closed->opened.slidingIn")) {
+            const element = gridImagesRef.current[chosenItemId].current;
             const animation = performLastInvertPlay({
-              element: gridImagesRef.current[chosenItemId].current,
-              first: firstImageRect
+              element: element,
+              first: firstImageRect,
+              last: element.getBoundingClientRect()
             });
             animation.onfinish = () => send("FINISHED_SLIDE_IN_ANIMATION");
             animation.oncancel = () => console.log("cancelled!");
           } else if (state.matches("opened->closed")) {
-            console.log("first:", firstImageRect);
-            const animation = performLastInvertPlay({
-              element: modalImageRef.current,
-              first: firstImageRect,
-              duration: 300
-            });
-            animation.oncancel = () => console.log("cancelled!");
-            animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+            if (prevProps.state.matches("opened")) {
+              const element = modalImageRef.current;
+              const animation = performLastInvertPlay({
+                element: element,
+                first: firstImageRect,
+                last: element.getBoundingClientRect(),
+                duration: 400
+              });
+              animation.oncancel = () => console.log("cancelled!");
+              animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+            } else if (prevProps.state.matches("closed->opened")) {
+              const element = modalImageRef.current;
+              const lastElement =
+                gridImagesContainersRef.current[chosenItemId].current;
+
+              const animation = performLastInvertPlay({
+                element: element,
+                first: firstImageRect,
+                last: lastElement.getBoundingClientRect(),
+                duration: 400
+              });
+              animation.oncancel = () => console.log("cancelled!");
+              animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+            }
           }
         }
       }
@@ -304,7 +333,10 @@ const App = () => {
               }
             ]) => (
               <UseSnapshot key={itemId} itemId={itemId} state={state}>
-                <div className="image-container">
+                <div
+                  className="image-container"
+                  ref={gridImagesContainersRef.current[itemId]}
+                >
                   <img
                     {...{
                       style:
@@ -316,6 +348,11 @@ const App = () => {
                               left: extendedState.gridImageProperties.left,
                               width: extendedState.gridImageProperties.width,
                               height: extendedState.gridImageProperties.height
+                            }
+                          : state.matches("opened->closed") &&
+                            chosenItemId === itemId
+                          ? {
+                              visibility: "hidden"
                             }
                           : {}
                     }}
@@ -345,16 +382,17 @@ const App = () => {
           closeModal={() => {
             if (state.matches("opened") || state.matches("closed->opened")) {
               console.log("stop!");
-              const gridImageRef = gridImagesRef.current[chosenItemId];
-              const gridImageRect = gridImageRef.current.getBoundingClientRect();
+              const gridImageContainerRef =
+                gridImagesContainersRef.current[chosenItemId];
+              const gridImageContainerRect = gridImageContainerRef.current.getBoundingClientRect();
               setExtendedState(prev => {
                 return {
                   ...prev,
                   modalImageProperties: {
-                    top: gridImageRect.top,
-                    left: gridImageRect.left,
-                    width: gridImageRect.width,
-                    height: gridImageRect.height
+                    top: gridImageContainerRect.top,
+                    left: gridImageContainerRect.left,
+                    width: gridImageContainerRect.width,
+                    height: gridImageContainerRect.height
                   }
                 };
               });

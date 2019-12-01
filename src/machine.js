@@ -25,17 +25,21 @@ const machine = Machine({
             FINISHED_SLIDE_IN_ANIMATION: "#modal-machine.opened"
           }
         }
+      },
+      on: {
+        CLOSE_MODAL: "opened->closed"
       }
     },
-    opened: {},
+    opened: {
+      on: {
+        CLOSE_MODAL: "opened->closed"
+      }
+    },
     "opened->closed": {
       on: {
         FINISHED_SLIDE_OUT_ANIMATION: "closed"
       }
     }
-  },
-  on: {
-    CLOSE_MODAL: "opened->closed"
   }
 });
 
