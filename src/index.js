@@ -164,6 +164,29 @@ const App = () => {
             }
           };
         });
+      },
+      updatePropertiesUsingGridImage: () => {
+        const gridImageRect = gridImagesRef.current[
+          chosenItemId
+        ].current.getBoundingClientRect();
+        const portalImageRect = portalImageRef.current.getBoundingClientRect();
+        setExtendedState(prev => {
+          return {
+            ...prev,
+            portalImageProperties: {
+              top: gridImageRect.top,
+              left: gridImageRect.left,
+              width: gridImageRect.width,
+              height: gridImageRect.height
+            },
+            previousPortalImageProperties: {
+              top: portalImageRect.top,
+              left: portalImageRect.left,
+              width: portalImageRect.width,
+              height: portalImageRect.height
+            }
+          };
+        });
       }
     }
   });
@@ -223,33 +246,6 @@ const App = () => {
     send
   ]);
 
-  const handleClosingModal = React.useCallback(() => {
-    if (state.matches("opened") || state.matches("closed->opened")) {
-      const gridImageRect = gridImagesRef.current[
-        chosenItemId
-      ].current.getBoundingClientRect();
-      const portalImageRect = portalImageRef.current.getBoundingClientRect();
-      setExtendedState(prev => {
-        return {
-          ...prev,
-          portalImageProperties: {
-            top: gridImageRect.top,
-            left: gridImageRect.left,
-            width: gridImageRect.width,
-            height: gridImageRect.height
-          },
-          previousPortalImageProperties: {
-            top: portalImageRect.top,
-            left: portalImageRect.left,
-            width: portalImageRect.width,
-            height: portalImageRect.height
-          }
-        };
-      });
-      send("CLOSE_MODAL");
-    }
-  }, [send, state, chosenItemId]);
-
   const fetchImages = async () => {
     const preloadedImages = await Promise.all(
       Object.entries(extendedState.items).map(([itemId, { imageUrl }]) =>
@@ -292,6 +288,7 @@ const App = () => {
   }, []);
 
   React.useEffect(() => {
+    // making sure to transition the state only after the modal has mounted, otherwise there would be no destination image for the animation
     if (state.matches("closed->opened.mountingModal")) {
       send("MOUNTED_MODAL");
     }
@@ -300,13 +297,13 @@ const App = () => {
   React.useEffect(() => {
     const listener = ({ key }) => {
       if (key === "Escape") {
-        handleClosingModal();
+        send("CLOSE_MODAL");
       }
     };
     window.addEventListener("keydown", listener);
 
     return () => window.removeEventListener("keydown", listener);
-  }, [send, handleClosingModal]);
+  }, [send]);
 
   console.log("*** <App RENDER> ***");
   console.log("extendedState:", extendedState);
@@ -363,7 +360,7 @@ const App = () => {
         <ItemModal
           item={state.matches("closed") ? null : items[chosenItemId]}
           modalState={state}
-          closeModal={handleClosingModal}
+          closeModal={() => send("CLOSE_MODAL")}
           modalImageRef={modalImageRef}
         />
         <Portal>

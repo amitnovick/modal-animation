@@ -27,12 +27,18 @@ const machine = Machine({
         }
       },
       on: {
-        CLOSE_MODAL: "opened->closed"
+        CLOSE_MODAL: {
+          target: "opened->closed",
+          actions: "updatePropertiesUsingGridImage"
+        }
       }
     },
     opened: {
       on: {
-        CLOSE_MODAL: "opened->closed"
+        CLOSE_MODAL: {
+          target: "opened->closed",
+          actions: "updatePropertiesUsingGridImage"
+        }
       }
     },
     "opened->closed": {
