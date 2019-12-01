@@ -106,10 +106,6 @@ function preloadImage(url) {
 }
 
 const performLastInvertPlay = ({ element, last, first, duration = 400 }) => {
-  console.log("first:", first);
-  console.log("last:", last);
-  console.log("element:", element);
-
   const deltaX = first.left - last.left;
   const deltaY = first.top - last.top;
   const deltaW = first.width / last.width;
@@ -146,6 +142,8 @@ const App = () => {
     previousPortalImageProperties: null
   });
 
+  const { items, chosenItemId, hasFinishedLoading } = extendedState;
+
   const Portal = usePortal();
 
   const portalImageRef = React.useRef();
@@ -156,7 +154,6 @@ const App = () => {
       updatePropertiesUsingModalImage: () => {
         setExtendedState(prev => {
           const rect = modalImageRef.current.getBoundingClientRect();
-          console.log("updatePropertiesUsingModalImage: rect:", rect);
           return {
             ...prev,
             portalImageProperties: {
@@ -167,7 +164,6 @@ const App = () => {
             }
           };
         });
-        console.log("");
       }
     }
   });
@@ -227,6 +223,33 @@ const App = () => {
     send
   ]);
 
+  const handleClosingModal = React.useCallback(() => {
+    if (state.matches("opened") || state.matches("closed->opened")) {
+      const gridImageRect = gridImagesRef.current[
+        chosenItemId
+      ].current.getBoundingClientRect();
+      const portalImageRect = portalImageRef.current.getBoundingClientRect();
+      setExtendedState(prev => {
+        return {
+          ...prev,
+          portalImageProperties: {
+            top: gridImageRect.top,
+            left: gridImageRect.left,
+            width: gridImageRect.width,
+            height: gridImageRect.height
+          },
+          previousPortalImageProperties: {
+            top: portalImageRect.top,
+            left: portalImageRect.left,
+            width: portalImageRect.width,
+            height: portalImageRect.height
+          }
+        };
+      });
+      send("CLOSE_MODAL");
+    }
+  }, [send, state, chosenItemId]);
+
   const fetchImages = async () => {
     const preloadedImages = await Promise.all(
       Object.entries(extendedState.items).map(([itemId, { imageUrl }]) =>
@@ -274,7 +297,16 @@ const App = () => {
     }
   }, [state.matches("closed->opened.mountingModal")]);
 
-  const { items, chosenItemId, hasFinishedLoading } = extendedState;
+  React.useEffect(() => {
+    const listener = ({ key }) => {
+      if (key === "Escape") {
+        handleClosingModal();
+      }
+    };
+    window.addEventListener("keydown", listener);
+
+    return () => window.removeEventListener("keydown", listener);
+  }, [send, handleClosingModal]);
 
   console.log("*** <App RENDER> ***");
   console.log("extendedState:", extendedState);
@@ -331,32 +363,7 @@ const App = () => {
         <ItemModal
           item={state.matches("closed") ? null : items[chosenItemId]}
           modalState={state}
-          closeModal={() => {
-            if (state.matches("opened") || state.matches("closed->opened")) {
-              const gridImageRect = gridImagesRef.current[
-                chosenItemId
-              ].current.getBoundingClientRect();
-              const portalImageRect = portalImageRef.current.getBoundingClientRect();
-              setExtendedState(prev => {
-                return {
-                  ...prev,
-                  portalImageProperties: {
-                    top: gridImageRect.top,
-                    left: gridImageRect.left,
-                    width: gridImageRect.width,
-                    height: gridImageRect.height
-                  },
-                  previousPortalImageProperties: {
-                    top: portalImageRect.top,
-                    left: portalImageRect.left,
-                    width: portalImageRect.width,
-                    height: portalImageRect.height
-                  }
-                };
-              });
-              send("CLOSE_MODAL");
-            }
-          }}
+          closeModal={handleClosingModal}
           modalImageRef={modalImageRef}
         />
         <Portal>

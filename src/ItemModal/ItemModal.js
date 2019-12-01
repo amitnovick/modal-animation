@@ -22,10 +22,8 @@ const customStyles = {
   }
 };
 
-class ItemModal extends React.PureComponent {
-  render() {
-    const { modalState, item, closeModal, modalImageRef } = this.props;
-
+const ItemModal = React.memo(
+  ({ modalState, item, closeModal, modalImageRef }) => {
     return (
       <Modal
         isOpen={true}
@@ -63,7 +61,7 @@ class ItemModal extends React.PureComponent {
       </Modal>
     );
   }
-}
+);
 
 ItemModal.propTypes = {
   modalState: PropTypes.object.isRequired,
