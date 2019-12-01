@@ -108,6 +108,7 @@ function preloadImage(url) {
 const performLastInvertPlay = ({ element, last, first, duration = 400 }) => {
   console.log("first:", first);
   console.log("last:", last);
+  console.log("element:", element);
 
   const deltaX = first.left - last.left;
   const deltaY = first.top - last.top;
@@ -141,11 +142,12 @@ const App = () => {
     items: initialItems,
     chosenItemId: null,
     hasFinishedLoading: false,
-    gridImageProperties: null,
-    modalImageProperties: null
+    portalImageProperties: null
   });
 
   const Portal = usePortal();
+
+  const portalImgRef = React.useRef();
 
   const [state, send] = useMachine(machine, {
     devTools: true,
@@ -156,7 +158,7 @@ const App = () => {
           console.log("updatePropertiesUsingModalImage: rect:", rect);
           return {
             ...prev,
-            gridImageProperties: {
+            portalImageProperties: {
               top: rect.top,
               left: rect.left,
               width: rect.width,
@@ -170,16 +172,6 @@ const App = () => {
   });
 
   const gridImagesRef = React.useRef(
-    Object.keys(extendedState.items).reduce(
-      (accumulated, itemId) => ({
-        ...accumulated,
-        [itemId]: React.createRef()
-      }),
-      {}
-    )
-  );
-
-  const gridImagesContainersRef = React.useRef(
     Object.keys(extendedState.items).reduce(
       (accumulated, itemId) => ({
         ...accumulated,
@@ -210,10 +202,7 @@ const App = () => {
             state.matches("opened->closed") &&
             prevProps.state.matches("closed->opened")
           ) {
-            console.log("called?");
-            const firstImageRect = gridImagesRef.current[
-              chosenItemId
-            ].current.getBoundingClientRect();
+            const firstImageRect = portalImgRef.current.getBoundingClientRect();
             return { firstImageRect: firstImageRect, prevProps };
           } else {
             return { firstImageRect: null };
@@ -227,37 +216,30 @@ const App = () => {
           return;
         } else {
           if (state.matches("closed->opened.slidingIn")) {
-            const element = gridImagesRef.current[chosenItemId].current;
             const animation = performLastInvertPlay({
-              element: element,
+              element: portalImgRef.current,
               first: firstImageRect,
-              last: element.getBoundingClientRect()
+              last: modalImageRef.current.getBoundingClientRect()
             });
             animation.onfinish = () => send("FINISHED_SLIDE_IN_ANIMATION");
-            animation.oncancel = () => console.log("cancelled!");
           } else if (state.matches("opened->closed")) {
             if (prevProps.state.matches("opened")) {
-              const element = modalImageRef.current;
               const animation = performLastInvertPlay({
-                element: element,
+                element: portalImgRef.current,
                 first: firstImageRect,
-                last: element.getBoundingClientRect(),
-                duration: 400
+                last: gridImagesRef.current[
+                  chosenItemId
+                ].current.getBoundingClientRect()
               });
-              animation.oncancel = () => console.log("cancelled!");
               animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
             } else if (prevProps.state.matches("closed->opened")) {
-              const element = modalImageRef.current;
-              const lastElement =
-                gridImagesContainersRef.current[chosenItemId].current;
-
               const animation = performLastInvertPlay({
-                element: element,
+                element: portalImgRef.current,
                 first: firstImageRect,
-                last: lastElement.getBoundingClientRect(),
-                duration: 400
+                last: gridImagesRef.current[
+                  chosenItemId
+                ].current.getBoundingClientRect()
               });
-              animation.oncancel = () => console.log("cancelled!");
               animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
             }
           }
@@ -321,6 +303,10 @@ const App = () => {
   console.log("state.value:", state.value);
   console.log("*** </App RENDER> ***");
 
+  const shouldDisplayPortalImage =
+    state.matches("closed->opened.slidingIn") ||
+    state.matches("opened->closed");
+
   if (!hasFinishedLoading) {
     return <h2> Loading... </h2>;
   } else {
@@ -336,24 +322,11 @@ const App = () => {
               }
             ]) => (
               <UseSnapshot key={itemId} itemId={itemId} state={state}>
-                <div
-                  className="image-container"
-                  ref={gridImagesContainersRef.current[itemId]}
-                >
+                <div className="image-container">
                   <img
                     {...{
                       style:
-                        state.matches("closed->opened.slidingIn") &&
-                        chosenItemId === itemId
-                          ? {
-                              position: "absolute",
-                              top: extendedState.gridImageProperties.top,
-                              left: extendedState.gridImageProperties.left,
-                              width: extendedState.gridImageProperties.width,
-                              height: extendedState.gridImageProperties.height
-                            }
-                          : state.matches("opened->closed") &&
-                            chosenItemId === itemId
+                        shouldDisplayPortalImage && chosenItemId === itemId
                           ? {
                               visibility: "hidden"
                             }
@@ -384,18 +357,16 @@ const App = () => {
           modalState={state}
           closeModal={() => {
             if (state.matches("opened") || state.matches("closed->opened")) {
-              console.log("stop!");
-              const gridImageContainerRef =
-                gridImagesContainersRef.current[chosenItemId];
-              const gridImageContainerRect = gridImageContainerRef.current.getBoundingClientRect();
+              const gridImageRef = gridImagesRef.current[chosenItemId];
+              const gridImageRect = gridImageRef.current.getBoundingClientRect();
               setExtendedState(prev => {
                 return {
                   ...prev,
-                  modalImageProperties: {
-                    top: gridImageContainerRect.top,
-                    left: gridImageContainerRect.left,
-                    width: gridImageContainerRect.width,
-                    height: gridImageContainerRect.height
+                  portalImageProperties: {
+                    top: gridImageRect.top,
+                    left: gridImageRect.left,
+                    width: gridImageRect.width,
+                    height: gridImageRect.height
                   }
                 };
               });
@@ -403,9 +374,26 @@ const App = () => {
             }
           }}
           modalImageRef={modalImageRef}
-          modalImageProperties={extendedState.modalImageProperties}
         />
-        <Portal>Hi there</Portal>
+        <Portal>
+          <img
+            ref={portalImgRef}
+            {...{
+              src: shouldDisplayPortalImage
+                ? items[chosenItemId].image.src
+                : undefined
+            }}
+            {...{
+              style: shouldDisplayPortalImage
+                ? {
+                    ...extendedState.portalImageProperties,
+                    position: "absolute"
+                  }
+                : { display: "none" }
+            }}
+            alt=""
+          />
+        </Portal>
       </>
     );
   }

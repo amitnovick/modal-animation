@@ -23,13 +23,7 @@ const customStyles = {
 
 class ItemModal extends React.PureComponent {
   render() {
-    const {
-      modalState,
-      item,
-      closeModal,
-      modalImageRef,
-      modalImageProperties
-    } = this.props;
+    const { modalState, item, closeModal, modalImageRef } = this.props;
 
     return (
       <Modal
@@ -57,18 +51,6 @@ class ItemModal extends React.PureComponent {
         </button>
 
         <img
-          {...{
-            style: modalState.matches("opened->closed")
-              ? {
-                  visibility: "visible",
-                  position: "absolute",
-                  top: modalImageProperties.top,
-                  left: modalImageProperties.left,
-                  width: modalImageProperties.width,
-                  height: modalImageProperties.height
-                }
-              : {}
-          }}
           ref={modalImageRef}
           className={styles["image"]}
           src={item !== null ? item.image.src : undefined}
@@ -83,8 +65,7 @@ ItemModal.propTypes = {
   modalState: PropTypes.object.isRequired,
   item: PropTypes.object,
   closeModal: PropTypes.func.isRequired,
-  modalImageRef: PropTypes.any,
-  modalImageProperties: PropTypes.object
+  modalImageRef: PropTypes.any
 };
 
 export default ItemModal;
