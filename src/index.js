@@ -6,6 +6,7 @@ import ItemModal from "./ItemModal/ItemModal";
 import useSnapshot from "./utils/useSnapshot";
 import machine from "./machine";
 import { useMachine } from "@xstate/react";
+import usePortal from "./utils/usePortal";
 
 const initialItems = {
   FvVO3o6Gw8g: {
@@ -143,6 +144,8 @@ const App = () => {
     gridImageProperties: null,
     modalImageProperties: null
   });
+
+  const Portal = usePortal();
 
   const [state, send] = useMachine(machine, {
     devTools: true,
@@ -402,6 +405,7 @@ const App = () => {
           modalImageRef={modalImageRef}
           modalImageProperties={extendedState.modalImageProperties}
         />
+        <Portal>Hi there</Portal>
       </>
     );
   }
