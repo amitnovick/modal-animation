@@ -142,12 +142,13 @@ const App = () => {
     items: initialItems,
     chosenItemId: null,
     hasFinishedLoading: false,
-    portalImageProperties: null
+    portalImageProperties: null,
+    previousPortalImageProperties: null
   });
 
   const Portal = usePortal();
 
-  const portalImgRef = React.useRef();
+  const portalImageRef = React.useRef();
 
   const [state, send] = useMachine(machine, {
     devTools: true,
@@ -187,31 +188,18 @@ const App = () => {
     {
       getSnapshot: ({ prevProps, props }) => {
         if (chosenItemId === props.itemId && prevProps.state !== props.state) {
-          if (
-            state.matches("opened->closed") &&
-            prevProps.state.matches("closed->opened")
-          ) {
-            return {
-              shouldRun: true,
-              portalImageRect: portalImgRef.current.getBoundingClientRect()
-            };
-          } else {
-            return { shouldRun: true };
-          }
+          return true;
         } else {
-          return { shouldRun: false };
+          return false;
         }
       },
-      layoutEffect: ({
-        prevProps,
-        snapshot: { shouldRun, portalImageRect }
-      }) => {
+      layoutEffect: ({ prevProps, snapshot: shouldRun }) => {
         if (!shouldRun) {
           return;
         } else {
           if (state.matches("closed->opened.slidingIn")) {
             const animation = performLastInvertPlay({
-              element: portalImgRef.current,
+              element: portalImageRef.current,
               first: gridImagesRef.current[
                 chosenItemId
               ].current.getBoundingClientRect(),
@@ -221,7 +209,7 @@ const App = () => {
           } else if (state.matches("opened->closed")) {
             if (prevProps.state.matches("opened")) {
               const animation = performLastInvertPlay({
-                element: portalImgRef.current,
+                element: portalImageRef.current,
                 first: modalImageRef.current.getBoundingClientRect(),
                 last: gridImagesRef.current[
                   chosenItemId
@@ -230,12 +218,11 @@ const App = () => {
               animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
             } else if (prevProps.state.matches("closed->opened")) {
               const animation = performLastInvertPlay({
-                element: portalImgRef.current,
-                first: portalImageRect,
+                element: portalImageRef.current,
+                first: extendedState.previousPortalImageProperties,
                 last: gridImagesRef.current[
                   chosenItemId
-                ].current.getBoundingClientRect(),
-                duration: 400
+                ].current.getBoundingClientRect()
               });
               animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
             }
@@ -354,8 +341,10 @@ const App = () => {
           modalState={state}
           closeModal={() => {
             if (state.matches("opened") || state.matches("closed->opened")) {
-              const gridImageRef = gridImagesRef.current[chosenItemId];
-              const gridImageRect = gridImageRef.current.getBoundingClientRect();
+              const gridImageRect = gridImagesRef.current[
+                chosenItemId
+              ].current.getBoundingClientRect();
+              const portalImageRect = portalImageRef.current.getBoundingClientRect();
               setExtendedState(prev => {
                 return {
                   ...prev,
@@ -364,6 +353,12 @@ const App = () => {
                     left: gridImageRect.left,
                     width: gridImageRect.width,
                     height: gridImageRect.height
+                  },
+                  previousPortalImageProperties: {
+                    top: portalImageRect.top,
+                    left: portalImageRect.left,
+                    width: portalImageRect.width,
+                    height: portalImageRect.height
                   }
                 };
               });
@@ -375,7 +370,7 @@ const App = () => {
         <Portal>
           <img
             className="image"
-            ref={portalImgRef}
+            ref={portalImageRef}
             {...{
               src: shouldDisplayPortalImage
                 ? items[chosenItemId].image.src
