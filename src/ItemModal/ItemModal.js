@@ -14,7 +14,8 @@ const customStyles = {
     bottom: "auto",
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
-    borderRadius: "8px"
+    borderRadius: "8px",
+    padding: "0px"
   },
   overlay: {
     backgroundColor: "rgba(0,0,0,0.5)"
@@ -44,16 +45,21 @@ class ItemModal extends React.PureComponent {
           }
         }}
       >
-        <button className={styles["close-button"]} onClick={closeModal}>
-          ×
-        </button>
+        <div className={styles["modal-top-bar"]}>
+          <h2 className={styles["modal-title"]}>Photo</h2>
+          <button className={styles["close-button"]} onClick={closeModal}>
+            ×
+          </button>
+        </div>
 
-        <img
-          ref={modalImageRef}
-          className={styles["image"]}
-          src={item !== null ? item.image.src : undefined}
-          alt="artwork"
-        />
+        <div className={styles["image-container"]}>
+          <img
+            ref={modalImageRef}
+            className={styles["image"]}
+            src={item !== null ? item.image.src : undefined}
+            alt="artwork"
+          />
+        </div>
       </Modal>
     );
   }
