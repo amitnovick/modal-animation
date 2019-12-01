@@ -332,7 +332,8 @@ const App = () => {
                 <img
                   {...{
                     style:
-                      shouldDisplayPortalImage && chosenItemId === itemId
+                      (shouldDisplayPortalImage || state.matches("opened")) &&
+                      chosenItemId === itemId
                         ? {
                             visibility: "hidden"
                           }
