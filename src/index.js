@@ -302,12 +302,14 @@ const App = () => {
     fetchImages();
   }, []);
 
+  const isMountingModal = state.matches("closed->opened.mountingModal");
+
   React.useEffect(() => {
     // making sure to transition the state only after the modal has mounted, otherwise there would be no destination image for the animation
-    if (state.matches("closed->opened.mountingModal")) {
+    if (isMountingModal) {
       send("MOUNTED_MODAL");
     }
-  }, [state.matches("closed->opened.mountingModal")]);
+  }, [isMountingModal]);
 
   React.useEffect(() => {
     const listener = ({ key }) => {
@@ -319,6 +321,22 @@ const App = () => {
 
     return () => window.removeEventListener("keydown", listener);
   }, [send]);
+
+  const isOpening = state.matches("closed->opened");
+
+  React.useEffect(() => {
+    if (isOpening) {
+      const listener = ({ target }) => {
+        if (!portalImageRef.current.contains(target)) {
+          send("CLOSE_MODAL");
+        }
+      };
+
+      window.addEventListener("mousedown", listener);
+
+      return () => window.removeEventListener("mousedown", listener);
+    }
+  }, [isOpening]);
 
   console.log("*** <App RENDER> ***");
   console.log("extendedState:", extendedState);
