@@ -44,7 +44,19 @@ const ItemModal = React.memo(
         }}
       >
         <div className={styles["modal-top-bar"]}>
-          <h2 className={styles["modal-title"]}>Photo</h2>
+          {item !== null ? (
+            <div className={styles["artist-bar"]}>
+              <img
+                className={styles["artist-image"]}
+                src={item.artistImage}
+                alt="arist-avatar"
+              />
+              <div className={styles["artist-identity-container"]}>
+                <span className={styles["artist-name"]}>{item.artistName}</span>
+                <span className={styles["artist-id"]}>{item.artistId}</span>
+              </div>
+            </div>
+          ) : null}
           <button className={styles["close-button"]} onClick={closeModal}>
             ×
           </button>
