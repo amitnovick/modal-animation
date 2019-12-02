@@ -168,9 +168,14 @@
 
   .artist-bar-small-screen {
     display: flex;
+    padding: 16px 0 0 14px;
   }
 
   .image-container {
     margin-top: 6px;
+  }
+
+  .image {
+    max-width: none;
   }
 }
