@@ -30,29 +30,30 @@ const ItemModal = React.memo(
 
     return (
       <Portal>
-        <div
-          className={styles["modal-overlay"]}
-          style={{
-            display: modalState.matches("closed") ? "none" : undefined,
-            opacity: modalState.matches("closed->opened") ? 0 : undefined,
-            visibility: modalState.matches("opened->closed")
-              ? "hidden"
-              : undefined
-          }}
-        >
-          <div className={styles["modal-content"]} ref={modalContentRef}>
-            <div className={styles["modal-top-bar"]}>
-              <button
-                className={styles["left-arrow-button"]}
-                onClick={closeModal}
-              >
-                <FontAwesomeIcon icon={faArrowLeft} />
-              </button>
-              <button className={styles["back-button"]} onClick={closeModal}>
-                Back
-              </button>
+        {item === null ? null : (
+          <div
+            className={styles["modal-overlay"]}
+            style={{
+              display: modalState.matches("closed") ? "none" : undefined,
+              visibility:
+                modalState.matches("opened->closed") ||
+                modalState.matches("closed->opened")
+                  ? "hidden"
+                  : undefined
+            }}
+          >
+            <div className={styles["modal-content"]} ref={modalContentRef}>
+              <div className={styles["modal-top-bar"]}>
+                <button
+                  className={styles["left-arrow-button"]}
+                  onClick={closeModal}
+                >
+                  <FontAwesomeIcon icon={faArrowLeft} />
+                </button>
+                <button className={styles["back-button"]} onClick={closeModal}>
+                  Back
+                </button>
 
-              {item !== null ? (
                 <div className={styles["artist-bar-large-screen"]}>
                   <img
                     className={styles["artist-image"]}
@@ -66,12 +67,10 @@ const ItemModal = React.memo(
                     <span className={styles["artist-id"]}>{item.artistId}</span>
                   </div>
                 </div>
-              ) : null}
-              <button className={styles["close-button"]} onClick={closeModal}>
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            </div>
-            {item !== null ? (
+                <button className={styles["close-button"]} onClick={closeModal}>
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
               <div className={styles["artist-bar-small-screen"]}>
                 <img
                   className={styles["artist-image"]}
@@ -85,17 +84,17 @@ const ItemModal = React.memo(
                   <span className={styles["artist-id"]}>{item.artistId}</span>
                 </div>
               </div>
-            ) : null}
-            <div className={styles["image-container"]}>
-              <img
-                ref={modalImageRef}
-                className={styles["image"]}
-                src={item !== null ? item.image.src : undefined}
-                alt="artwork"
-              />
+              <div className={styles["image-container"]}>
+                <img
+                  ref={modalImageRef}
+                  className={styles["image"]}
+                  src={item.image.src}
+                  alt="artwork"
+                />
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </Portal>
     );
   }
