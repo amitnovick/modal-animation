@@ -1,10 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "normalize.css";
-import "./index.scss";
-import ItemModal from "./ItemModal/ItemModal";
-import machine from "./machine";
 import { useMachine } from "@xstate/react";
+
+import "./index.scss";
+import Modal from "./Modal/Modal";
+import machine from "./machine";
 import usePortal from "./utils/usePortal";
 import usePrevious from "./utils/usePrevious";
 
@@ -105,6 +106,39 @@ function preloadImage(url) {
   });
 }
 
+const fetchImages = async items => {
+  const preloadedImages = await Promise.all(
+    Object.entries(items).map(([itemId, { imageUrl }]) =>
+      preloadImage(imageUrl).then(image => [itemId, image])
+    )
+  );
+
+  const imagesByItemId = preloadedImages.reduce(
+    (accumulated, [itemId, image]) => {
+      return {
+        ...accumulated,
+        [itemId]: image
+      };
+    },
+    {}
+  );
+
+  const itemsWithImages = Object.entries(items).reduce(
+    (accumulated, [itemId, itemData]) => {
+      return {
+        ...accumulated,
+        [itemId]: {
+          ...itemData,
+          image: imagesByItemId[itemId]
+        }
+      };
+    },
+    {}
+  );
+
+  return itemsWithImages;
+};
+
 const performLastInvertPlay = ({ element, last, first }) => {
   const deltaX = first.left - last.left;
   const deltaY = first.top - last.top;
@@ -201,6 +235,29 @@ const App = () => {
           };
         });
       }
+    },
+    activities: {
+      listenToMouseDownOutsidePortalImage: () => {
+        const listener = ({ target }) => {
+          if (!portalImageRef.current.contains(target)) {
+            send("CLOSE_MODAL");
+          }
+        };
+
+        window.addEventListener("mousedown", listener);
+
+        return () => window.removeEventListener("mousedown", listener);
+      },
+      listenToKeyDownForClosingModal: () => {
+        const listener = ({ key }) => {
+          if (key === "Escape") {
+            send("CLOSE_MODAL");
+          }
+        };
+        window.addEventListener("keydown", listener);
+
+        return () => window.removeEventListener("keydown", listener);
+      }
     }
   });
 
@@ -261,36 +318,8 @@ const App = () => {
     send
   ]);
 
-  const fetchImages = async () => {
-    const preloadedImages = await Promise.all(
-      Object.entries(extendedState.items).map(([itemId, { imageUrl }]) =>
-        preloadImage(imageUrl).then(image => [itemId, image])
-      )
-    );
-
-    const imagesByItemId = preloadedImages.reduce(
-      (accumulated, [itemId, image]) => {
-        return {
-          ...accumulated,
-          [itemId]: image
-        };
-      },
-      {}
-    );
-
-    const itemsWithImages = Object.entries(extendedState.items).reduce(
-      (accumulated, [itemId, itemData]) => {
-        return {
-          ...accumulated,
-          [itemId]: {
-            ...itemData,
-            image: imagesByItemId[itemId]
-          }
-        };
-      },
-      {}
-    );
-
+  const updateItems = async () => {
+    const itemsWithImages = await fetchImages(extendedState.items);
     setExtendedState(prev => ({
       ...prev,
       items: itemsWithImages,
@@ -299,7 +328,7 @@ const App = () => {
   };
 
   React.useEffect(() => {
-    fetchImages();
+    updateItems();
   }, []);
 
   const isMountingModal = state.matches("closed->opened.mountingModal");
@@ -310,33 +339,6 @@ const App = () => {
       send("MOUNTED_MODAL");
     }
   }, [isMountingModal]);
-
-  React.useEffect(() => {
-    const listener = ({ key }) => {
-      if (key === "Escape") {
-        send("CLOSE_MODAL");
-      }
-    };
-    window.addEventListener("keydown", listener);
-
-    return () => window.removeEventListener("keydown", listener);
-  }, [send]);
-
-  const isOpening = state.matches("closed->opened");
-
-  React.useEffect(() => {
-    if (isOpening) {
-      const listener = ({ target }) => {
-        if (!portalImageRef.current.contains(target)) {
-          send("CLOSE_MODAL");
-        }
-      };
-
-      window.addEventListener("mousedown", listener);
-
-      return () => window.removeEventListener("mousedown", listener);
-    }
-  }, [isOpening]);
 
   console.log("*** <App RENDER> ***");
   console.log("extendedState:", extendedState);
@@ -391,7 +393,7 @@ const App = () => {
             )
           )}
         </div>
-        <ItemModal
+        <Modal
           item={state.matches("closed") ? null : items[chosenItemId]}
           modalState={state}
           closeModal={() => send("CLOSE_MODAL")}
