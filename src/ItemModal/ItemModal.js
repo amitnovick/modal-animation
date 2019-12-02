@@ -6,40 +6,21 @@ import styles from "./styles.module.scss";
 
 Modal.setAppElement("#root");
 
-const customStyles = {
-  content: {
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)",
-    borderRadius: "8px",
-    padding: "0px"
-  },
-  overlay: {
-    backgroundColor: "rgba(0,0,0,0.5)"
-  }
-};
-
 const ItemModal = React.memo(
   ({ modalState, item, closeModal, modalImageRef }) => {
     return (
       <Modal
         isOpen={true}
         onRequestClose={closeModal}
+        overlayClassName={styles["modal-overlay"]}
+        className={styles["modal-content"]}
         style={{
-          ...customStyles,
           overlay: {
-            ...customStyles.overlay,
             display: modalState.matches("closed") ? "none" : undefined,
             opacity: modalState.matches("closed->opened") ? 0 : undefined,
             visibility: modalState.matches("opened->closed")
               ? "hidden"
               : undefined
-          },
-          content: {
-            ...customStyles.content
           }
         }}
       >
