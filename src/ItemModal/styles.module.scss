@@ -28,7 +28,7 @@
   background: transparent;
   border: none;
   outline: none;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: black;
   cursor: pointer;
@@ -41,16 +41,33 @@
   }
 }
 
+.left-arrow-button {
+  display: none;
+}
+
+.back-button {
+  display: none;
+}
+
 .modal-top-bar {
   height: 3rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 4px 4px 0 14px;
 }
 
-.artist-bar {
+%artist-bar {
   display: flex;
+}
+
+.artist-bar-large-screen {
+  @extend %artist-bar;
+}
+
+.artist-bar-small-screen {
+  @extend %artist-bar;
+  display: none;
 }
 
 .artist-image {
@@ -101,4 +118,59 @@
 
 .track-metadata-box {
   font-size: 1.5rem;
+}
+
+@media (max-width: 767px) {
+  .modal-content {
+    height: 100%;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .modal-top-bar {
+    padding-left: 0;
+  }
+
+  .close-button {
+    display: none;
+  }
+
+  .left-arrow-button {
+    display: initial;
+    background: transparent;
+    border: none;
+    outline: none;
+    width: 60px;
+    height: 60px;
+    padding: 0;
+
+    & > svg {
+      font-size: 30px;
+    }
+  }
+
+  .back-button {
+    display: initial;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 30px;
+    padding: 0;
+  }
+
+  .modal-top-bar {
+    justify-content: normal;
+  }
+
+  .artist-bar-large-screen {
+    display: none;
+  }
+
+  .artist-bar-small-screen {
+    display: flex;
+  }
+
+  .image-container {
+    margin-top: 6px;
+  }
 }
