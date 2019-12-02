@@ -235,29 +235,6 @@ const App = () => {
           };
         });
       }
-    },
-    activities: {
-      listenToMouseDownOutsidePortalImage: () => {
-        const listener = ({ target }) => {
-          if (!portalImageRef.current.contains(target)) {
-            send("CLOSE_MODAL");
-          }
-        };
-
-        window.addEventListener("mousedown", listener);
-
-        return () => window.removeEventListener("mousedown", listener);
-      },
-      listenToKeyDownForClosingModal: () => {
-        const listener = ({ key }) => {
-          if (key === "Escape") {
-            send("CLOSE_MODAL");
-          }
-        };
-        window.addEventListener("keydown", listener);
-
-        return () => window.removeEventListener("keydown", listener);
-      }
     }
   });
 
@@ -339,6 +316,33 @@ const App = () => {
       send("MOUNTED_MODAL");
     }
   }, [isMountingModal]);
+
+  React.useEffect(() => {
+    const listener = ({ key }) => {
+      if (key === "Escape") {
+        send("CLOSE_MODAL");
+      }
+    };
+    window.addEventListener("keydown", listener);
+
+    return () => window.removeEventListener("keydown", listener);
+  }, []);
+
+  const isOpeningModal = state.matches("closed->opened");
+
+  React.useEffect(() => {
+    if (isOpeningModal) {
+      const listener = ({ target }) => {
+        if (!portalImageRef.current.contains(target)) {
+          send("CLOSE_MODAL");
+        }
+      };
+
+      window.addEventListener("mousedown", listener);
+
+      return () => window.removeEventListener("mousedown", listener);
+    }
+  }, [isOpeningModal]);
 
   console.log("*** <App RENDER> ***");
   console.log("extendedState:", extendedState);

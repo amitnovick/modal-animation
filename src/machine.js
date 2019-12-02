@@ -3,7 +3,6 @@ import { Machine } from "xstate";
 const machine = Machine({
   initial: "closed",
   id: "modal-machine",
-  activities: "listenToKeyDownForClosingModal",
   states: {
     closed: {
       on: {
@@ -12,7 +11,6 @@ const machine = Machine({
     },
     "closed->opened": {
       initial: "mountingModal",
-      activities: "listenToMouseDownOutsidePortalImage",
       states: {
         mountingModal: {
           on: {
