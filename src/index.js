@@ -106,13 +106,17 @@ function preloadImage(url) {
   });
 }
 
-const fetchImages = async items => {
+const fetchAndPreloadImages = async items => {
   const preloadedImages = await Promise.all(
     Object.entries(items).map(([itemId, { imageUrl }]) =>
       preloadImage(imageUrl).then(image => [itemId, image])
     )
   );
 
+  return preloadedImages;
+};
+
+const normalizeImagesIntoItems = (preloadedImages, items) => {
   const imagesByItemId = preloadedImages.reduce(
     (accumulated, [itemId, image]) => {
       return {
@@ -195,6 +199,18 @@ const App = () => {
 
   const portalImageRef = React.useRef();
 
+  const gridImagesRef = React.useRef(
+    Object.keys(extendedState.items).reduce(
+      (accumulated, itemId) => ({
+        ...accumulated,
+        [itemId]: React.createRef()
+      }),
+      {}
+    )
+  );
+
+  const modalImageRef = React.useRef();
+
   const [state, send] = useMachine(machine, {
     devTools: true,
     actions: {
@@ -240,18 +256,6 @@ const App = () => {
 
   const previousState = usePrevious(state);
 
-  const gridImagesRef = React.useRef(
-    Object.keys(extendedState.items).reduce(
-      (accumulated, itemId) => ({
-        ...accumulated,
-        [itemId]: React.createRef()
-      }),
-      {}
-    )
-  );
-
-  const modalImageRef = React.useRef();
-
   React.useLayoutEffect(() => {
     if (previousState) {
       if (state.matches("closed->opened.slidingIn")) {
@@ -296,7 +300,11 @@ const App = () => {
   ]);
 
   const updateItems = async () => {
-    const itemsWithImages = await fetchImages(extendedState.items);
+    const preloadedImages = await fetchAndPreloadImages(extendedState.items);
+    const itemsWithImages = normalizeImagesIntoItems(
+      preloadedImages,
+      extendedState.items
+    );
     setExtendedState(prev => ({
       ...prev,
       items: itemsWithImages,
