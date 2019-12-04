@@ -160,7 +160,7 @@ const performLastInvertPlay = ({ element, last, first }) => {
       Math.pow(centerFirstY - centerLastY, 2)
   );
 
-  const duration = distance < 200 ? 200 : 400; // If the grid item is really close, make duration short
+  const duration = distance < 200 ? 300 : 400; // If the grid item is really close, make duration short
 
   const animation = element.animate(
     [
