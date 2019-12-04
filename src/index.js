@@ -195,7 +195,8 @@ const App = () => {
 
   const { items, chosenItemId, hasFinishedLoading } = extendedState;
 
-  const Portal = usePortal();
+  const TransitionElementPortal = usePortal();
+  const ModalPortal = usePortal();
 
   const portalImageRef = React.useRef();
 
@@ -214,20 +215,6 @@ const App = () => {
   const [state, send] = useMachine(machine, {
     devTools: true,
     actions: {
-      updatePropertiesUsingModalImage: () => {
-        setExtendedState(prev => {
-          const rect = modalImageRef.current.getBoundingClientRect();
-          return {
-            ...prev,
-            portalImageProperties: {
-              top: rect.top,
-              left: rect.left,
-              width: rect.width,
-              height: rect.height
-            }
-          };
-        });
-      },
       updatePropertiesUsingGridImage: () => {
         const gridImageRect = gridImagesRef.current[
           chosenItemId
@@ -258,9 +245,19 @@ const App = () => {
 
   React.useLayoutEffect(() => {
     if (previousState) {
-      if (state.matches("closed->opened.slidingIn")) {
+      if (state.matches("closed->opened") && previousState.matches("closed")) {
         const last = modalImageRef.current.getBoundingClientRect();
-        console.log("modalImageRef: last:", last);
+        setExtendedState(prev => {
+          return {
+            ...prev,
+            portalImageProperties: {
+              top: last.top,
+              left: last.left,
+              width: last.width,
+              height: last.height
+            }
+          };
+        });
         const animation = performLastInvertPlay({
           element: portalImageRef.current,
           first: gridImagesRef.current[
@@ -316,15 +313,6 @@ const App = () => {
     updateItems();
   }, []);
 
-  const isMountingModal = state.matches("closed->opened.mountingModal");
-
-  React.useEffect(() => {
-    // making sure to transition the state only after the modal has mounted, otherwise there would be no destination image for the animation
-    if (isMountingModal) {
-      send("MOUNTED_MODAL");
-    }
-  }, [isMountingModal]);
-
   React.useEffect(() => {
     const listener = ({ key }) => {
       if (key === "Escape") {
@@ -355,11 +343,14 @@ const App = () => {
   console.log("*** <App RENDER> ***");
   console.log("extendedState:", extendedState);
   console.log("state.value:", state.value);
+  console.log(
+    "previous state.value:",
+    previousState ? previousState.value : undefined
+  );
   console.log("*** </App RENDER> ***");
 
   const shouldDisplayPortalImage =
-    state.matches("closed->opened.slidingIn") ||
-    state.matches("opened->closed");
+    state.matches("closed->opened") || state.matches("opened->closed");
 
   if (!hasFinishedLoading) {
     return <h2> Loading... </h2>;
@@ -405,13 +396,15 @@ const App = () => {
             )
           )}
         </div>
-        <Modal
-          item={state.matches("closed") ? null : items[chosenItemId]}
-          modalState={state}
-          closeModal={() => send("CLOSE_MODAL")}
-          modalImageRef={modalImageRef}
-        />
-        <Portal>
+        <ModalPortal>
+          <Modal
+            item={state.matches("closed") ? null : items[chosenItemId]}
+            modalState={state}
+            closeModal={() => send("CLOSE_MODAL")}
+            modalImageRef={modalImageRef}
+          />
+        </ModalPortal>
+        <TransitionElementPortal>
           <img
             className="image"
             ref={portalImageRef}
@@ -430,7 +423,7 @@ const App = () => {
             }}
             alt=""
           />
-        </Portal>
+        </TransitionElementPortal>
       </>
     );
   }

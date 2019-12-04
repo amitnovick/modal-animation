@@ -4,11 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import styles from "./styles.module.scss";
-import usePortal from "../utils/usePortal";
 
 const Modal = React.memo(({ modalState, item, closeModal, modalImageRef }) => {
-  const Portal = usePortal();
-
   const modalContentRef = React.useRef();
 
   const isOpen = modalState.matches("opened");
@@ -28,7 +25,7 @@ const Modal = React.memo(({ modalState, item, closeModal, modalImageRef }) => {
   }, [isOpen]);
 
   return (
-    <Portal>
+    <>
       {item === null ? null : (
         <div
           className={styles["modal-overlay"]}
@@ -92,7 +89,7 @@ const Modal = React.memo(({ modalState, item, closeModal, modalImageRef }) => {
           </div>
         </div>
       )}
-    </Portal>
+    </>
   );
 });
 

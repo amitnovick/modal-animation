@@ -10,23 +10,8 @@ const machine = Machine({
       }
     },
     "closed->opened": {
-      initial: "mountingModal",
-      states: {
-        mountingModal: {
-          on: {
-            MOUNTED_MODAL: {
-              actions: "updatePropertiesUsingModalImage",
-              target: "slidingIn"
-            }
-          }
-        },
-        slidingIn: {
-          on: {
-            FINISHED_SLIDE_IN_ANIMATION: "#modal-machine.opened"
-          }
-        }
-      },
       on: {
+        FINISHED_SLIDE_IN_ANIMATION: "opened",
         CLOSE_MODAL: {
           target: "opened->closed",
           actions: "updatePropertiesUsingGridImage"
