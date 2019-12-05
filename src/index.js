@@ -143,6 +143,10 @@ const normalizeImagesIntoItems = (preloadedImages, items) => {
   return itemsWithImages;
 };
 
+const applyStyles = (element, stylesOptions) => {
+  Object.assign(element.style, stylesOptions);
+};
+
 const performLastInvertPlay = ({ element, last, first }) => {
   const deltaX = first.left - last.left;
   const deltaY = first.top - last.top;
@@ -188,9 +192,7 @@ const App = () => {
   const [extendedState, setExtendedState] = React.useState({
     items: initialItems,
     chosenItemId: null,
-    hasFinishedLoading: false,
-    portalImageProperties: null,
-    previousPortalImageProperties: null
+    hasFinishedLoading: false
   });
 
   const { items, chosenItemId, hasFinishedLoading } = extendedState;
@@ -199,6 +201,8 @@ const App = () => {
   const ModalPortal = usePortal();
 
   const portalImageRef = React.useRef();
+
+  const animationRef = React.useRef();
 
   const gridImagesRef = React.useRef(
     Object.keys(extendedState.items).reduce(
@@ -216,27 +220,46 @@ const App = () => {
     devTools: true,
     actions: {
       updatePropertiesUsingGridImage: () => {
-        const gridImageRect = gridImagesRef.current[
-          chosenItemId
-        ].current.getBoundingClientRect();
-        const portalImageRect = portalImageRef.current.getBoundingClientRect();
-        setExtendedState(prev => {
-          return {
-            ...prev,
-            portalImageProperties: {
-              top: gridImageRect.top,
-              left: gridImageRect.left,
-              width: gridImageRect.width,
-              height: gridImageRect.height
-            },
-            previousPortalImageProperties: {
-              top: portalImageRect.top,
-              left: portalImageRect.left,
-              width: portalImageRect.width,
-              height: portalImageRect.height
-            }
-          };
-        });
+        if (state.matches("opened")) {
+          const gridImageRect = gridImagesRef.current[
+            chosenItemId
+          ].current.getBoundingClientRect();
+          applyStyles(portalImageRef.current, {
+            display: "initial",
+            position: "fixed"
+          });
+          applyStyles(portalImageRef.current, {
+            top: gridImageRect.top + "px",
+            left: gridImageRect.left + "px",
+            width: gridImageRect.width + "px",
+            height: gridImageRect.height + "px"
+          });
+          const modalImageRect = modalImageRef.current.getBoundingClientRect();
+          const animation = performLastInvertPlay({
+            element: portalImageRef.current,
+            first: modalImageRect,
+            last: gridImageRect
+          });
+          animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+        } else if (state.matches("closed->opened")) {
+          const gridImageRect = gridImagesRef.current[
+            chosenItemId
+          ].current.getBoundingClientRect();
+          const portalImageRect = portalImageRef.current.getBoundingClientRect();
+          animationRef.current.cancel();
+          applyStyles(portalImageRef.current, {
+            top: gridImageRect.top + "px",
+            left: gridImageRect.left + "px",
+            width: gridImageRect.width + "px",
+            height: gridImageRect.height + "px"
+          });
+          const animation = performLastInvertPlay({
+            element: portalImageRef.current,
+            first: portalImageRect,
+            last: gridImageRect
+          });
+          animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+        }
       }
     }
   });
@@ -247,16 +270,11 @@ const App = () => {
     if (previousState) {
       if (state.matches("closed->opened") && previousState.matches("closed")) {
         const last = modalImageRef.current.getBoundingClientRect();
-        setExtendedState(prev => {
-          return {
-            ...prev,
-            portalImageProperties: {
-              top: last.top,
-              left: last.left,
-              width: last.width,
-              height: last.height
-            }
-          };
+        applyStyles(portalImageRef.current, {
+          top: last.top + "px",
+          left: last.left + "px",
+          width: last.width + "px",
+          height: last.height + "px"
         });
         const animation = performLastInvertPlay({
           element: portalImageRef.current,
@@ -266,35 +284,10 @@ const App = () => {
           last: last
         });
         animation.onfinish = () => send("FINISHED_SLIDE_IN_ANIMATION");
-      } else if (state.matches("opened->closed")) {
-        if (previousState.matches("opened")) {
-          const animation = performLastInvertPlay({
-            element: portalImageRef.current,
-            first: modalImageRef.current.getBoundingClientRect(),
-            last: gridImagesRef.current[
-              extendedState.chosenItemId
-            ].current.getBoundingClientRect()
-          });
-          animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
-        } else if (previousState.matches("closed->opened")) {
-          const animation = performLastInvertPlay({
-            element: portalImageRef.current,
-            first: extendedState.previousPortalImageProperties,
-            last: gridImagesRef.current[
-              extendedState.chosenItemId
-            ].current.getBoundingClientRect()
-          });
-          animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
-        }
+        animationRef.current = animation;
       }
     }
-  }, [
-    state,
-    previousState,
-    extendedState.chosenItemId,
-    extendedState.previousPortalImageProperties,
-    send
-  ]);
+  }, [state, previousState, extendedState.chosenItemId, send]);
 
   const updateItems = async () => {
     const preloadedImages = await fetchAndPreloadImages(extendedState.items);
@@ -416,7 +409,6 @@ const App = () => {
             {...{
               style: shouldDisplayPortalImage
                 ? {
-                    ...extendedState.portalImageProperties,
                     position: "fixed"
                   }
                 : { display: "none" }
