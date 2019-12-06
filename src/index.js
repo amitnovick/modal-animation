@@ -399,23 +399,15 @@ const App = () => {
           />
         </ModalPortal>
         <TransitionElementPortal>
-          <img
-            className="image"
-            ref={portalImageRef}
-            {...{
-              src: shouldDisplayPortalImage
-                ? items[chosenItemId].image.src
-                : undefined
-            }}
-            {...{
-              style: shouldDisplayPortalImage
-                ? {
-                    position: "fixed"
-                  }
-                : { display: "none" }
-            }}
-            alt=""
-          />
+          {shouldDisplayPortalImage ? (
+            <img
+              className="image"
+              ref={portalImageRef}
+              src={items[chosenItemId].image.src}
+              style={{ position: "fixed" }}
+              alt=""
+            />
+          ) : null}
         </TransitionElementPortal>
       </>
     );
