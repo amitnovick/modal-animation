@@ -270,10 +270,6 @@ const App = () => {
           chosenItemId
         ].current.getBoundingClientRect();
         applyStyles(portalImageRef.current, {
-          display: "initial",
-          position: "fixed"
-        });
-        applyStyles(portalImageRef.current, {
           top: gridImageRect.top + "px",
           left: gridImageRect.left + "px",
           width: gridImageRect.width + "px",
