@@ -217,51 +217,7 @@ const App = () => {
   const modalImageRef = React.useRef();
 
   const [state, send] = useMachine(machine, {
-    devTools: true,
-    actions: {
-      updatePropertiesUsingGridImage: () => {
-        if (state.matches("opened")) {
-          const gridImageRect = gridImagesRef.current[
-            chosenItemId
-          ].current.getBoundingClientRect();
-          applyStyles(portalImageRef.current, {
-            display: "initial",
-            position: "fixed"
-          });
-          applyStyles(portalImageRef.current, {
-            top: gridImageRect.top + "px",
-            left: gridImageRect.left + "px",
-            width: gridImageRect.width + "px",
-            height: gridImageRect.height + "px"
-          });
-          const modalImageRect = modalImageRef.current.getBoundingClientRect();
-          const animation = performLastInvertPlay({
-            element: portalImageRef.current,
-            first: modalImageRect,
-            last: gridImageRect
-          });
-          animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
-        } else if (state.matches("closed->opened")) {
-          const gridImageRect = gridImagesRef.current[
-            chosenItemId
-          ].current.getBoundingClientRect();
-          const portalImageRect = portalImageRef.current.getBoundingClientRect();
-          animationRef.current.cancel();
-          applyStyles(portalImageRef.current, {
-            top: gridImageRect.top + "px",
-            left: gridImageRect.left + "px",
-            width: gridImageRect.width + "px",
-            height: gridImageRect.height + "px"
-          });
-          const animation = performLastInvertPlay({
-            element: portalImageRef.current,
-            first: portalImageRect,
-            last: gridImageRect
-          });
-          animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
-        }
-      }
-    }
+    devTools: true
   });
 
   const previousState = usePrevious(state);
@@ -279,15 +235,60 @@ const App = () => {
         const animation = performLastInvertPlay({
           element: portalImageRef.current,
           first: gridImagesRef.current[
-            extendedState.chosenItemId
+            chosenItemId
           ].current.getBoundingClientRect(),
           last: last
         });
         animation.onfinish = () => send("FINISHED_SLIDE_IN_ANIMATION");
         animationRef.current = animation;
+      } else if (
+        state.matches("opened->closed") &&
+        previousState.matches("closed->opened")
+      ) {
+        const gridImageRect = gridImagesRef.current[
+          chosenItemId
+        ].current.getBoundingClientRect();
+        const portalImageRect = portalImageRef.current.getBoundingClientRect();
+        animationRef.current.cancel();
+        applyStyles(portalImageRef.current, {
+          top: gridImageRect.top + "px",
+          left: gridImageRect.left + "px",
+          width: gridImageRect.width + "px",
+          height: gridImageRect.height + "px"
+        });
+        const animation = performLastInvertPlay({
+          element: portalImageRef.current,
+          first: portalImageRect,
+          last: gridImageRect
+        });
+        animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+      } else if (
+        state.matches("opened->closed") &&
+        previousState.matches("opened")
+      ) {
+        const gridImageRect = gridImagesRef.current[
+          chosenItemId
+        ].current.getBoundingClientRect();
+        applyStyles(portalImageRef.current, {
+          display: "initial",
+          position: "fixed"
+        });
+        applyStyles(portalImageRef.current, {
+          top: gridImageRect.top + "px",
+          left: gridImageRect.left + "px",
+          width: gridImageRect.width + "px",
+          height: gridImageRect.height + "px"
+        });
+        const modalImageRect = modalImageRef.current.getBoundingClientRect();
+        const animation = performLastInvertPlay({
+          element: portalImageRef.current,
+          first: modalImageRect,
+          last: gridImageRect
+        });
+        animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
       }
     }
-  }, [state, previousState, extendedState.chosenItemId, send]);
+  }, [state.value]);
 
   const updateItems = async () => {
     const preloadedImages = await fetchAndPreloadImages(extendedState.items);

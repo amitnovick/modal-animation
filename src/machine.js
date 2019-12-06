@@ -12,18 +12,12 @@ const machine = Machine({
     "closed->opened": {
       on: {
         FINISHED_SLIDE_IN_ANIMATION: "opened",
-        CLOSE_MODAL: {
-          target: "opened->closed",
-          actions: "updatePropertiesUsingGridImage"
-        }
+        CLOSE_MODAL: "opened->closed"
       }
     },
     opened: {
       on: {
-        CLOSE_MODAL: {
-          target: "opened->closed",
-          actions: "updatePropertiesUsingGridImage"
-        }
+        CLOSE_MODAL: "opened->closed"
       }
     },
     "opened->closed": {
