@@ -8,7 +8,7 @@ function Details({ itemId }) {
   const { imageUrl, artistName, artistId, artistImage } = item;
   return (
     <>
-      <h1>Details page</h1>
+      <h1>Details</h1>
       <div className={styles["artist-bar-large-screen"]}>
         <img
           className={styles["artist-image"]}

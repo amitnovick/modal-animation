@@ -2,11 +2,13 @@ import React from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { useHistory } from "react-router-dom";
 
 import styles from "./styles.module.scss";
 
 const Modal = React.memo(({ modalState, item, closeModal, modalImageRef }) => {
   const modalContentRef = React.useRef();
+  const history = useHistory();
 
   const isOpen = modalState.matches("opened");
 
@@ -22,6 +24,16 @@ const Modal = React.memo(({ modalState, item, closeModal, modalImageRef }) => {
 
       return () => window.removeEventListener("mousedown", listener);
     }
+  }, [isOpen]);
+
+  React.useEffect(() => {
+    const unlisten = history.listen((_, action) => {
+      if (isOpen && action === "POP") {
+        closeModal();
+      }
+    });
+
+    return () => unlisten();
   }, [isOpen]);
 
   return (
