@@ -1,0 +1,106 @@
+.modal-top-bar {
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 0 14px;
+}
+
+%artist-bar {
+  display: flex;
+}
+
+.artist-bar-large-screen {
+  @extend %artist-bar;
+}
+
+.artist-bar-small-screen {
+  @extend %artist-bar;
+  display: none;
+}
+
+.artist-image {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+}
+
+.artist-identity-container {
+  display: flex;
+  flex-direction: column;
+  margin-left: 6px;
+}
+
+.artist-name {
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.artist-id {
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
+.image-container {
+  padding: 0 14px 14px 14px;
+  margin-top: 3px;
+}
+
+.image {
+  display: block;
+  margin: 0 auto;
+  max-width: 600px;
+  width: 100%;
+  max-height: 600px;
+
+  object-fit: cover;
+}
+
+.header {
+  text-align: center;
+}
+
+.top-container {
+  margin-bottom: 1rem;
+  margin: 0 auto;
+}
+
+.track-metadata-box {
+  font-size: 1.5rem;
+}
+
+@media (max-width: 767px) {
+  .modal-top-bar {
+    padding-left: 0;
+  }
+
+  .back-button {
+    display: initial;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 30px;
+    padding: 0;
+  }
+
+  .modal-top-bar {
+    justify-content: normal;
+  }
+
+  .artist-bar-large-screen {
+    display: none;
+  }
+
+  .artist-bar-small-screen {
+    display: flex;
+    padding: 16px 0 0 14px;
+  }
+
+  .image-container {
+    margin-top: 6px;
+  }
+
+  .image {
+    max-width: none;
+  }
+}
