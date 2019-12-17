@@ -59,13 +59,11 @@ const applyStyles = (element, stylesOptions) => {
   Object.assign(element.style, stylesOptions);
 };
 
-const performLastInvertPlay = ({ element, last, first }) => {
+const performLastInvertPlay = ({ element, last, first, duration }) => {
   const deltaX = first.left - last.left;
   const deltaY = first.top - last.top;
   const deltaW = last.width === 0 ? 0 : first.width / last.width; // working around a bug that occurs when switching between responsive layout and normal layout in devtools
   const deltaH = last.height === 0 ? 0 : first.height / last.height; // working around a bug that occurs when switching between responsive layout and normal layout in devtools
-
-  const duration = window.matchMedia("(max-width: 767px)").matches ? 300 : 200; // If the device is mobile
 
   const animation = element.animate(
     [
@@ -103,7 +101,8 @@ const Gallery = () => {
 
   const portalImageRef = React.useRef();
 
-  const animationRef = React.useRef();
+  const imageAnimationRef = React.useRef();
+  const modalOverlayAnimationRef = React.useRef();
 
   const gridImagesRef = React.useRef(
     Object.keys(extendedState.items).reduce(
@@ -115,6 +114,7 @@ const Gallery = () => {
     )
   );
 
+  const modalOverlayRef = React.useRef();
   const modalImageRef = React.useRef();
 
   const [state, send] = useMachine(machine, {
@@ -141,15 +141,35 @@ const Gallery = () => {
           width: last.width + "px",
           height: last.height + "px"
         });
+
+        const duration = window.matchMedia("(max-width: 767px)").matches
+          ? 300
+          : 200;
+
         const animation = performLastInvertPlay({
           element: portalImageRef.current,
           first: gridImagesRef.current[
             chosenItemId
           ].current.getBoundingClientRect(),
-          last: last
+          last: last,
+          duration: duration
         });
         animation.onfinish = () => send("FINISHED_SLIDE_IN_ANIMATION");
-        animationRef.current = animation;
+        imageAnimationRef.current = animation;
+
+        modalOverlayAnimationRef.current = modalOverlayRef.current.animate(
+          [
+            {
+              opacity: 0
+            },
+            { opacity: 1 }
+          ],
+          {
+            duration: duration,
+            easing: "ease-in-out",
+            fill: "both"
+          }
+        );
       } else if (
         state.matches("opened->closed") &&
         previousState.matches("closed->opened")
@@ -158,7 +178,7 @@ const Gallery = () => {
           chosenItemId
         ].current.getBoundingClientRect();
         const portalImageRect = portalImageRef.current.getBoundingClientRect();
-        animationRef.current.cancel();
+        imageAnimationRef.current.cancel();
         applyStyles(portalImageRef.current, {
           top: gridImageRect.top + "px",
           left: gridImageRect.left + "px",
@@ -168,9 +188,12 @@ const Gallery = () => {
         const animation = performLastInvertPlay({
           element: portalImageRef.current,
           first: portalImageRect,
-          last: gridImageRect
+          last: gridImageRect,
+          duration: window.matchMedia("(max-width: 767px)").matches ? 300 : 200
         });
         animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+
+        modalOverlayAnimationRef.current.reverse();
       } else if (
         state.matches("opened->closed") &&
         previousState.matches("opened")
@@ -185,12 +208,30 @@ const Gallery = () => {
           height: gridImageRect.height + "px"
         });
         const modalImageRect = modalImageRef.current.getBoundingClientRect();
+        const duration = window.matchMedia("(max-width: 767px)").matches
+          ? 300
+          : 200;
         const animation = performLastInvertPlay({
           element: portalImageRef.current,
           first: modalImageRect,
-          last: gridImageRect
+          last: gridImageRect,
+          duration: duration
         });
         animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+
+        modalOverlayRef.current.animate(
+          [
+            {
+              opacity: 1
+            },
+            { opacity: 0 }
+          ],
+          {
+            duration: duration,
+            easing: "ease-in-out",
+            fill: "both"
+          }
+        );
       }
     }
   }, [state.value]);
@@ -228,7 +269,10 @@ const Gallery = () => {
   React.useEffect(() => {
     if (isOpeningModal) {
       const listener = ({ target }) => {
-        if (!portalImageRef.current.contains(target)) {
+        if (
+          portalImageRef.current &&
+          !portalImageRef.current.contains(target)
+        ) {
           send("CLOSE_MODAL");
         }
       };
@@ -304,6 +348,7 @@ const Gallery = () => {
             modalState={state}
             closeModal={() => send("CLOSE_MODAL")}
             modalImageRef={modalImageRef}
+            modalOverlayRef={modalOverlayRef}
           />
         </ModalPortal>
         <TransitionElementPortal>
