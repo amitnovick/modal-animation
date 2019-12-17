@@ -90,6 +90,53 @@ const performLastInvertPlay = ({ element, last, first, duration }) => {
   return animation;
 };
 
+const performLastInvertPlayWithBorderRadius = ({
+  element,
+  last,
+  first,
+  duration
+}) => {
+  const deltaX = first.left - last.left;
+  const deltaY = first.top - last.top;
+  const deltaW = last.width === 0 ? 1 : first.width / last.width; // working around a bug that occurs when switching between responsive layout and normal layout in devtools
+  const deltaH = last.height === 0 ? 1 : first.height / last.height; // working around a bug that occurs when switching between responsive layout and normal layout in devtools
+
+  const MODAL_CONTNT_BORDER_RADIUS_PX = 8;
+
+  const firstBorderValueXpx = MODAL_CONTNT_BORDER_RADIUS_PX * (1 / deltaW);
+  const firstBorderValueYpx = MODAL_CONTNT_BORDER_RADIUS_PX * (1 / deltaH);
+
+  const firstBorderValue = `${firstBorderValueXpx}px ${firstBorderValueYpx}px`;
+
+  const animation = element.animate(
+    [
+      {
+        transformOrigin: "top left",
+        transform: `
+        translate(${deltaX}px, ${deltaY}px)
+        scale(${deltaW}, ${deltaH})
+      `,
+        borderTopLeftRadius: firstBorderValue,
+        borderTopRightRadius: firstBorderValue,
+        borderBottomLeftRadius: firstBorderValue,
+        borderBottomRightRadius: firstBorderValue
+      },
+      {
+        borderRadius: `${MODAL_CONTNT_BORDER_RADIUS_PX}px`,
+        transformOrigin: "top left",
+        transform: "none"
+      }
+    ],
+    {
+      duration: duration,
+      easing: "ease-in-out",
+      fill: "both"
+    }
+  );
+
+  return animation;
+};
+
 const Gallery = () => {
   const [extendedState, setExtendedState] = React.useState({
     items: initialItems,
@@ -237,7 +284,7 @@ const Gallery = () => {
           height: gridImageRect.height + "px"
         });
 
-        performLastInvertPlay({
+        performLastInvertPlayWithBorderRadius({
           element: portalModalContentRef.current,
           first: modalContentRef.current.getBoundingClientRect(),
           last: gridImageRect,
@@ -293,13 +340,8 @@ const Gallery = () => {
 
   React.useEffect(() => {
     if (isOpeningModal) {
-      const listener = ({ target }) => {
-        if (
-          portalImageRef.current &&
-          !portalImageRef.current.contains(target)
-        ) {
-          send("CLOSE_MODAL");
-        }
+      const listener = () => {
+        send("CLOSE_MODAL");
       };
 
       window.addEventListener("mousedown", listener);
@@ -337,15 +379,6 @@ const Gallery = () => {
               <Link to={`/details/${itemId}`} key={itemId}>
                 <div className="image-container">
                   <img
-                    {...{
-                      style:
-                        (shouldDisplayPortalImage || state.matches("opened")) &&
-                        chosenItemId === itemId
-                          ? {
-                              visibility: "hidden"
-                            }
-                          : {}
-                    }}
                     key={itemId}
                     ref={gridImagesRef.current[itemId]}
                     className="image"
