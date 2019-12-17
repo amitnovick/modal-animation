@@ -65,18 +65,7 @@ const performLastInvertPlay = ({ element, last, first }) => {
   const deltaW = last.width === 0 ? 0 : first.width / last.width; // working around a bug that occurs when switching between responsive layout and normal layout in devtools
   const deltaH = last.height === 0 ? 0 : first.height / last.height; // working around a bug that occurs when switching between responsive layout and normal layout in devtools
 
-  const centerFirstX = first.left + first.width / 2;
-  const centerFirstY = first.top + first.height / 2;
-
-  const centerLastX = last.left + last.width / 2;
-  const centerLastY = last.top + last.height / 2;
-
-  const distance = Math.sqrt(
-    Math.pow(centerFirstX - centerLastX, 2) +
-      Math.pow(centerFirstY - centerLastY, 2)
-  );
-
-  const duration = distance < 200 ? 300 : 400; // If the grid item is really close, make duration short
+  const duration = window.matchMedia("(max-width: 767px)").matches ? 300 : 200; // If the device is mobile
 
   const animation = element.animate(
     [
