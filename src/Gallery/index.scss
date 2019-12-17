@@ -32,3 +32,10 @@ body {
   object-fit: cover;
   cursor: pointer;
 }
+
+.portal-modal-content {
+  position: fixed;
+
+  background-color: rgb(255, 255, 255);
+  border-radius: 8px;
+}

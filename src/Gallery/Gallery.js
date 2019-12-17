@@ -74,7 +74,10 @@ const performLastInvertPlay = ({ element, last, first, duration }) => {
         scale(${deltaW}, ${deltaH})
       `
       },
-      { transformOrigin: "top left", transform: "none" }
+      {
+        transformOrigin: "top left",
+        transform: "none"
+      }
     ],
     {
       // timing options
@@ -100,9 +103,13 @@ const Gallery = () => {
   const ModalPortal = usePortal();
 
   const portalImageRef = React.useRef();
+  const portalModalContentRef = React.useRef();
 
   const imageAnimationRef = React.useRef();
+  const modalContentAnimationRef = React.useRef();
+
   const modalOverlayAnimationRef = React.useRef();
+  const modalContentRef = React.useRef();
 
   const gridImagesRef = React.useRef(
     Object.keys(extendedState.items).reduce(
@@ -134,28 +141,46 @@ const Gallery = () => {
   React.useLayoutEffect(() => {
     if (previousState) {
       if (state.matches("closed->opened") && previousState.matches("closed")) {
-        const last = modalImageRef.current.getBoundingClientRect();
+        const lastImageRect = modalImageRef.current.getBoundingClientRect();
         applyStyles(portalImageRef.current, {
-          top: last.top + "px",
-          left: last.left + "px",
-          width: last.width + "px",
-          height: last.height + "px"
+          top: lastImageRect.top + "px",
+          left: lastImageRect.left + "px",
+          width: lastImageRect.width + "px",
+          height: lastImageRect.height + "px"
         });
 
         const duration = window.matchMedia("(max-width: 767px)").matches
           ? 300
           : 200;
 
+        const firstImageRect = gridImagesRef.current[
+          chosenItemId
+        ].current.getBoundingClientRect();
+
         const animation = performLastInvertPlay({
           element: portalImageRef.current,
-          first: gridImagesRef.current[
-            chosenItemId
-          ].current.getBoundingClientRect(),
-          last: last,
+          first: firstImageRect,
+          last: lastImageRect,
           duration: duration
         });
         animation.onfinish = () => send("FINISHED_SLIDE_IN_ANIMATION");
         imageAnimationRef.current = animation;
+
+        const lastModalContentRect = modalContentRef.current.getBoundingClientRect();
+
+        applyStyles(portalModalContentRef.current, {
+          top: lastModalContentRect.top + "px",
+          left: lastModalContentRect.left + "px",
+          width: lastModalContentRect.width + "px",
+          height: lastModalContentRect.height + "px"
+        });
+
+        modalContentAnimationRef.current = performLastInvertPlay({
+          element: portalModalContentRef.current,
+          first: firstImageRect,
+          last: lastModalContentRect,
+          duration: duration
+        });
 
         modalOverlayAnimationRef.current = modalOverlayRef.current.animate(
           [
@@ -174,26 +199,12 @@ const Gallery = () => {
         state.matches("opened->closed") &&
         previousState.matches("closed->opened")
       ) {
-        const gridImageRect = gridImagesRef.current[
-          chosenItemId
-        ].current.getBoundingClientRect();
-        const portalImageRect = portalImageRef.current.getBoundingClientRect();
-        imageAnimationRef.current.cancel();
-        applyStyles(portalImageRef.current, {
-          top: gridImageRect.top + "px",
-          left: gridImageRect.left + "px",
-          width: gridImageRect.width + "px",
-          height: gridImageRect.height + "px"
-        });
-        const animation = performLastInvertPlay({
-          element: portalImageRef.current,
-          first: portalImageRect,
-          last: gridImageRect,
-          duration: window.matchMedia("(max-width: 767px)").matches ? 300 : 200
-        });
-        animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+        imageAnimationRef.current.onfinish = () =>
+          send("FINISHED_SLIDE_OUT_ANIMATION");
+        imageAnimationRef.current.reverse();
 
         modalOverlayAnimationRef.current.reverse();
+        modalContentAnimationRef.current.reverse();
       } else if (
         state.matches("opened->closed") &&
         previousState.matches("opened")
@@ -218,6 +229,20 @@ const Gallery = () => {
           duration: duration
         });
         animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+
+        applyStyles(portalModalContentRef.current, {
+          top: gridImageRect.top + "px",
+          left: gridImageRect.left + "px",
+          width: gridImageRect.width + "px",
+          height: gridImageRect.height + "px"
+        });
+
+        performLastInvertPlay({
+          element: portalModalContentRef.current,
+          first: modalContentRef.current.getBoundingClientRect(),
+          last: gridImageRect,
+          duration: duration
+        });
 
         modalOverlayRef.current.animate(
           [
@@ -349,17 +374,25 @@ const Gallery = () => {
             closeModal={() => send("CLOSE_MODAL")}
             modalImageRef={modalImageRef}
             modalOverlayRef={modalOverlayRef}
+            modalContentRef={modalContentRef}
           />
         </ModalPortal>
         <TransitionElementPortal>
           {shouldDisplayPortalImage ? (
-            <img
-              className="image"
-              ref={portalImageRef}
-              src={items[chosenItemId].image.src}
-              style={{ position: "fixed" }}
-              alt=""
-            />
+            <>
+              <img
+                className="image"
+                ref={portalImageRef}
+                src={items[chosenItemId].image.src}
+                style={{ position: "fixed", zIndex: 1001 }} // zIndex must be greater than `portal-modal-content`
+                alt=""
+              />
+              <div
+                className="portal-modal-content"
+                ref={portalModalContentRef}
+                style={{ zIndex: 1000 }}
+              />
+            </>
           ) : null}
         </TransitionElementPortal>
       </>

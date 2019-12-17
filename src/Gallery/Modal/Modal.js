@@ -7,8 +7,14 @@ import { useHistory } from "react-router-dom";
 import styles from "./styles.module.scss";
 
 const Modal = React.memo(
-  ({ modalState, item, closeModal, modalImageRef, modalOverlayRef }) => {
-    const modalContentRef = React.useRef();
+  ({
+    modalState,
+    item,
+    closeModal,
+    modalImageRef,
+    modalOverlayRef,
+    modalContentRef
+  }) => {
     const history = useHistory();
 
     const isOpen = modalState.matches("opened");
