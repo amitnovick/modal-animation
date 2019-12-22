@@ -95,6 +95,9 @@ const performCustomEasingCounterScaleTransition = ({
   scaleY,
   firstLeft,
   lastLeft,
+  firstTop,
+  lastTop,
+  imageTransitionScaleFactor,
   duration
 }) => {
   const keyframes = Array(101)
@@ -112,15 +115,16 @@ const performCustomEasingCounterScaleTransition = ({
       const invScaleW = 1 / scaleW;
       const invScaleH = 1 / scaleH;
 
-      const imageScale = scale(scaleY, 1, step);
+      const imageScale = scale(imageTransitionScaleFactor, 1, step);
 
       const scaleDeltaX = scale(firstLeft, lastLeft, step);
+      const scaleDeltaY = scale(firstTop, lastTop, step);
 
       return {
         transformOrigin: "top left",
         transform: `
         scale(${invScaleW}, ${invScaleH})
-        translate(${scaleDeltaX}px, ${0}px)
+        translate(${scaleDeltaX}px, ${scaleDeltaY}px)
         scale(${imageScale}, ${imageScale})
     `
       };
@@ -196,6 +200,37 @@ const applyStylesPx = ({ element, styles }) => {
     {}
   );
   return Object.assign(element.style, stylesPx);
+};
+
+const fitObjectCover = ({ imageIntrinsicDimensions, rectangleDimensions }) => {
+  const heightRatio =
+    imageIntrinsicDimensions.height / rectangleDimensions.height;
+  const dimensionsFitByHeight = {
+    width: imageIntrinsicDimensions.width / heightRatio,
+    height: rectangleDimensions.height
+  };
+  if (dimensionsFitByHeight.width >= rectangleDimensions.width) {
+    return dimensionsFitByHeight;
+  } else {
+    const widthRatio =
+      imageIntrinsicDimensions.width / rectangleDimensions.width;
+    const dimensionsFitByWidth = {
+      width: rectangleDimensions.width,
+      height: imageIntrinsicDimensions.height / widthRatio
+    };
+    if (dimensionsFitByHeight.height >= rectangleDimensions.height) {
+      return dimensionsFitByWidth;
+    } else {
+      const largerDimension = Math.max(
+        rectangleDimensions.width,
+        rectangleDimensions.height
+      );
+      return {
+        width: largerDimension,
+        height: largerDimension
+      };
+    }
+  }
 };
 
 const Gallery = () => {
@@ -312,33 +347,51 @@ const Gallery = () => {
         /*** <portalImageRef> ***/
         const preloadedImage = items[chosenItemId].image;
 
-        const scaleFactor = preloadedImage.height / lastImageRect.height;
+        const scaledImageLast = fitObjectCover({
+          imageIntrinsicDimensions: {
+            width: preloadedImage.width,
+            height: preloadedImage.height
+          },
+          rectangleDimensions: {
+            width: lastImageRect.width,
+            height: lastImageRect.height
+          }
+        });
 
-        const scaledImageWidthLast = preloadedImage.width / scaleFactor;
-        const scaledImageHeightLast = lastImageRect.height;
-
-        const rectToImageScaleMultiplierFirst =
-          preloadedImage.height / firstImageRect.height;
-        const scaledImageWidthFirst =
-          preloadedImage.width / rectToImageScaleMultiplierFirst;
+        const scaledImageFirst = fitObjectCover({
+          imageIntrinsicDimensions: {
+            width: preloadedImage.width,
+            height: preloadedImage.height
+          },
+          rectangleDimensions: {
+            width: firstImageRect.width,
+            height: firstImageRect.height
+          }
+        });
 
         applyStylesPx({
           element: portalImageRef.current,
           styles: {
-            width: scaledImageWidthLast,
-            height: scaledImageHeightLast
+            width: scaledImageLast.width,
+            height: scaledImageLast.height
           }
         });
 
         const scaleW = firstImageRect.width / lastImageRect.width;
         const scaleH = firstImageRect.height / lastImageRect.height;
 
+        const imageTransitionScaleFactor =
+          scaledImageFirst.height / scaledImageLast.height;
+
         performCustomEasingCounterScaleTransition({
           element: portalImageRef.current,
           scaleX: scaleW,
           scaleY: scaleH,
-          firstLeft: -(scaledImageWidthFirst - firstImageRect.width) / 2,
-          lastLeft: -(scaledImageWidthLast - lastImageRect.width) / 2,
+          imageTransitionScaleFactor: imageTransitionScaleFactor,
+          firstLeft: -(scaledImageFirst.width - firstImageRect.width) / 2,
+          lastLeft: -(scaledImageLast.width - lastImageRect.width) / 2,
+          firstTop: -(scaledImageFirst.height - firstImageRect.height) / 2,
+          lastTop: -(scaledImageLast.height - lastImageRect.height) / 2,
           duration: duration
         });
         /*** </portalImageRef> ***/
@@ -450,6 +503,7 @@ const Gallery = () => {
           element: portalImageRef.current,
           scaleX: scaleW,
           scaleY: scaleH,
+          imageTransitionScaleFactor: scaleH,
           firstLeft: -(scaledImageWidthFirst - firstImageRect.width) / 2,
           lastLeft: -(scaledImageWidthLast - lastImageRect.width) / 2,
           duration: duration
