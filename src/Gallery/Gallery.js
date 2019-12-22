@@ -186,7 +186,7 @@ const performLastInvertPlayWithBorderRadius = ({
 };
 
 const getDuration = () => {
-  return window.matchMedia("(max-width: 767px)").matches ? 3000 : 2000;
+  return window.matchMedia("(max-width: 767px)").matches ? 300 : 200;
 };
 
 const applyStylesPx = ({ element, styles }) => {
@@ -249,6 +249,7 @@ const Gallery = () => {
   const portalCropDivRef = React.useRef();
   const portalModalCardRef = React.useRef();
 
+  const cropDivAnimationRef = React.useRef();
   const imageAnimationRef = React.useRef();
   const modalContentAnimationRef = React.useRef();
 
@@ -321,7 +322,7 @@ const Gallery = () => {
           duration: duration
         });
         animation.onfinish = () => send("FINISHED_SLIDE_IN_ANIMATION");
-        imageAnimationRef.current = animation;
+        cropDivAnimationRef.current = animation;
 
         /*** <portalModalCardRef> ***/
         const lastModalContentRect = modalContentRef.current.getBoundingClientRect();
@@ -347,7 +348,7 @@ const Gallery = () => {
         /*** <portalImageRef> ***/
         const preloadedImage = items[chosenItemId].image;
 
-        const scaledImageLast = fitObjectCover({
+        const lastScaledImage = fitObjectCover({
           imageIntrinsicDimensions: {
             width: preloadedImage.width,
             height: preloadedImage.height
@@ -358,7 +359,7 @@ const Gallery = () => {
           }
         });
 
-        const scaledImageFirst = fitObjectCover({
+        const firstScaledImage = fitObjectCover({
           imageIntrinsicDimensions: {
             width: preloadedImage.width,
             height: preloadedImage.height
@@ -372,8 +373,8 @@ const Gallery = () => {
         applyStylesPx({
           element: portalImageRef.current,
           styles: {
-            width: scaledImageLast.width,
-            height: scaledImageLast.height
+            width: lastScaledImage.width,
+            height: lastScaledImage.height
           }
         });
 
@@ -381,17 +382,17 @@ const Gallery = () => {
         const scaleH = firstImageRect.height / lastImageRect.height;
 
         const imageTransitionScaleFactor =
-          scaledImageFirst.height / scaledImageLast.height;
+          firstScaledImage.height / lastScaledImage.height;
 
-        performCustomEasingCounterScaleTransition({
+        imageAnimationRef.current = performCustomEasingCounterScaleTransition({
           element: portalImageRef.current,
           scaleX: scaleW,
           scaleY: scaleH,
           imageTransitionScaleFactor: imageTransitionScaleFactor,
-          firstLeft: -(scaledImageFirst.width - firstImageRect.width) / 2,
-          lastLeft: -(scaledImageLast.width - lastImageRect.width) / 2,
-          firstTop: -(scaledImageFirst.height - firstImageRect.height) / 2,
-          lastTop: -(scaledImageLast.height - lastImageRect.height) / 2,
+          firstLeft: -(firstScaledImage.width - firstImageRect.width) / 2,
+          lastLeft: -(lastScaledImage.width - lastImageRect.width) / 2,
+          firstTop: -(firstScaledImage.height - firstImageRect.height) / 2,
+          lastTop: -(lastScaledImage.height - lastImageRect.height) / 2,
           duration: duration
         });
         /*** </portalImageRef> ***/
@@ -412,8 +413,9 @@ const Gallery = () => {
         state.matches("opened->closed") &&
         previousState.matches("closed->opened")
       ) {
-        imageAnimationRef.current.onfinish = () =>
+        cropDivAnimationRef.current.onfinish = () =>
           send("FINISHED_SLIDE_OUT_ANIMATION");
+        cropDivAnimationRef.current.reverse();
         imageAnimationRef.current.reverse();
 
         modalOverlayAnimationRef.current.reverse();
@@ -478,34 +480,51 @@ const Gallery = () => {
         /*** <portalImageRef> ***/
         const preloadedImage = items[chosenItemId].image;
 
-        const scaleFactor = preloadedImage.height / lastImageRect.height;
+        const lastScaledImage = fitObjectCover({
+          imageIntrinsicDimensions: {
+            width: preloadedImage.width,
+            height: preloadedImage.height
+          },
+          rectangleDimensions: {
+            width: lastImageRect.width,
+            height: lastImageRect.height
+          }
+        });
 
-        const scaledImageWidthLast = preloadedImage.width / scaleFactor;
-        const scaledImageHeightLast = lastImageRect.height;
-
-        const rectToImageScaleMultiplierFirst =
-          preloadedImage.height / firstImageRect.height;
-        const scaledImageWidthFirst =
-          preloadedImage.width / rectToImageScaleMultiplierFirst;
+        const firstScaledImage = fitObjectCover({
+          imageIntrinsicDimensions: {
+            width: preloadedImage.width,
+            height: preloadedImage.height
+          },
+          rectangleDimensions: {
+            width: firstImageRect.width,
+            height: firstImageRect.height
+          }
+        });
 
         applyStylesPx({
           element: portalImageRef.current,
           styles: {
-            width: scaledImageWidthLast,
-            height: scaledImageHeightLast
+            width: lastScaledImage.width,
+            height: lastScaledImage.height
           }
         });
 
         const scaleW = firstImageRect.width / lastImageRect.width;
         const scaleH = firstImageRect.height / lastImageRect.height;
 
+        const imageTransitionScaleFactor =
+          firstScaledImage.height / lastScaledImage.height;
+
         performCustomEasingCounterScaleTransition({
           element: portalImageRef.current,
           scaleX: scaleW,
           scaleY: scaleH,
-          imageTransitionScaleFactor: scaleH,
-          firstLeft: -(scaledImageWidthFirst - firstImageRect.width) / 2,
-          lastLeft: -(scaledImageWidthLast - lastImageRect.width) / 2,
+          imageTransitionScaleFactor: imageTransitionScaleFactor,
+          firstLeft: -(firstScaledImage.width - firstImageRect.width) / 2,
+          lastLeft: -(lastScaledImage.width - lastImageRect.width) / 2,
+          firstTop: -(firstScaledImage.height - firstImageRect.height) / 2,
+          lastTop: -(lastScaledImage.height - lastImageRect.height) / 2,
           duration: duration
         });
         /*** </portalImageRef> ***/
