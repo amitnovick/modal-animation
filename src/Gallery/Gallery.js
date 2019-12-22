@@ -137,6 +137,10 @@ const performLastInvertPlayWithBorderRadius = ({
   return animation;
 };
 
+const getDuration = () => {
+  return window.matchMedia("(max-width: 767px)").matches ? 3000 : 2000;
+};
+
 const Gallery = () => {
   const [extendedState, setExtendedState] = React.useState({
     items: initialItems,
@@ -196,13 +200,13 @@ const Gallery = () => {
           height: lastImageRect.height + "px"
         });
 
-        const duration = window.matchMedia("(max-width: 767px)").matches
-          ? 300
-          : 200;
+        const duration = getDuration();
 
         const firstImageRect = gridImagesRef.current[
           chosenItemId
         ].current.getBoundingClientRect();
+
+        console.log("last:", lastImageRect);
 
         const animation = performLastInvertPlay({
           element: portalImageRef.current,
@@ -266,9 +270,7 @@ const Gallery = () => {
           height: gridImageRect.height + "px"
         });
         const modalImageRect = modalImageRef.current.getBoundingClientRect();
-        const duration = window.matchMedia("(max-width: 767px)").matches
-          ? 300
-          : 200;
+        const duration = getDuration();
         const animation = performLastInvertPlay({
           element: portalImageRef.current,
           first: modalImageRect,

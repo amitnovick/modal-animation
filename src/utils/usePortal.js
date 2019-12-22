@@ -10,6 +10,8 @@ function usePortal() {
 
   React.useEffect(() => {
     elToMountTo.appendChild(portal.current);
+
+    return () => document.removeChild(portal.current);
   }, [portal, elToMountTo]);
 
   const Portal = React.useCallback(
