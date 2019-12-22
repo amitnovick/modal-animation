@@ -33,9 +33,21 @@ body {
   cursor: pointer;
 }
 
-.portal-modal-content {
+.portal-modal-card {
   position: fixed;
 
   background-color: rgb(255, 255, 255);
   border-radius: 8px;
+}
+
+.portal-crop-div {
+  position: fixed;
+  display: none;
+}
+
+.portal-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
