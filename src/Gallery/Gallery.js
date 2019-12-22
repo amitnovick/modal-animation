@@ -273,16 +273,6 @@ const Gallery = () => {
         });
         /*** </cropDivRef> ***/
 
-        applyStyles({
-          element: portalCropDivRef.current,
-          styles: {
-            top: lastImageRect.top + "px",
-            left: lastImageRect.left + "px",
-            width: lastImageRect.width + "px",
-            height: lastImageRect.height + "px"
-          }
-        });
-
         const duration = getDuration();
 
         const firstImageRect = gridImagesRef.current[
@@ -301,13 +291,13 @@ const Gallery = () => {
         /*** <portalModalCardRef> ***/
         const lastModalContentRect = modalContentRef.current.getBoundingClientRect();
 
-        applyStyles({
+        applyStylesPx({
           element: portalModalCardRef.current,
           styles: {
-            top: lastModalContentRect.top + "px",
-            left: lastModalContentRect.left + "px",
-            width: lastModalContentRect.width + "px",
-            height: lastModalContentRect.height + "px"
+            top: lastModalContentRect.top,
+            left: lastModalContentRect.left,
+            width: lastModalContentRect.width,
+            height: lastModalContentRect.height
           }
         });
 
@@ -379,44 +369,92 @@ const Gallery = () => {
         state.matches("opened->closed") &&
         previousState.matches("opened")
       ) {
-        const gridImageRect = gridImagesRef.current[
+        const lastImageRect = gridImagesRef.current[
           chosenItemId
         ].current.getBoundingClientRect();
-        applyStyles({
-          element: portalImageRef.current,
+
+        /*** <cropDivRef> ***/
+        applyStylesPx({
+          element: portalCropDivRef.current,
           styles: {
-            top: gridImageRect.top + "px",
-            left: gridImageRect.left + "px",
-            width: gridImageRect.width + "px",
-            height: gridImageRect.height + "px"
+            top: lastImageRect.top,
+            left: lastImageRect.left,
+            width: lastImageRect.width,
+            height: lastImageRect.height
           }
         });
-        const modalImageRect = modalImageRef.current.getBoundingClientRect();
-        const duration = getDuration();
-        const animation = performLastInvertPlay({
-          element: portalImageRef.current,
-          first: modalImageRect,
-          last: gridImageRect,
-          duration: duration
-        });
-        animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
 
         applyStyles({
+          element: portalCropDivRef.current,
+          styles: {
+            display: "initial"
+          }
+        });
+        /*** </cropDivRef> ***/
+
+        const modalImageRect = modalImageRef.current.getBoundingClientRect();
+        const firstImageRect = modalImageRect;
+
+        const duration = getDuration();
+        const animation = performLastInvertPlay({
+          element: portalCropDivRef.current,
+          first: firstImageRect,
+          last: lastImageRect,
+          duration: duration
+        });
+
+        animation.onfinish = () => send("FINISHED_SLIDE_OUT_ANIMATION");
+
+        applyStylesPx({
           element: portalModalCardRef.current,
           styles: {
-            top: gridImageRect.top + "px",
-            left: gridImageRect.left + "px",
-            width: gridImageRect.width + "px",
-            height: gridImageRect.height + "px"
+            top: lastImageRect.top,
+            left: lastImageRect.left,
+            width: lastImageRect.width,
+            height: lastImageRect.height
           }
         });
 
         performLastInvertPlayWithBorderRadius({
           element: portalModalCardRef.current,
           first: modalContentRef.current.getBoundingClientRect(),
-          last: gridImageRect,
+          last: lastImageRect,
           duration: duration
         });
+
+        /*** <portalImageRef> ***/
+        const preloadedImage = items[chosenItemId].image;
+
+        const scaleFactor = preloadedImage.height / lastImageRect.height;
+
+        const scaledImageWidthLast = preloadedImage.width / scaleFactor;
+        const scaledImageHeightLast = lastImageRect.height;
+
+        const rectToImageScaleMultiplierFirst =
+          preloadedImage.height / firstImageRect.height;
+        const scaledImageWidthFirst =
+          preloadedImage.width / rectToImageScaleMultiplierFirst;
+
+        applyStylesPx({
+          element: portalImageRef.current,
+          styles: {
+            width: scaledImageWidthLast,
+            height: scaledImageHeightLast
+          }
+        });
+
+        const scaleW = firstImageRect.width / lastImageRect.width;
+        const scaleH = firstImageRect.height / lastImageRect.height;
+
+        performCustomEasingCounterScaleTransition({
+          element: portalImageRef.current,
+          scaleX: scaleW,
+          scaleY: scaleH,
+          firstLeft: -(scaledImageWidthFirst - firstImageRect.width) / 2,
+          lastLeft: -(scaledImageWidthLast - lastImageRect.width) / 2,
+          duration: duration
+        });
+        /*** </portalImageRef> ***/
 
         modalOverlayRef.current.animate(
           [
