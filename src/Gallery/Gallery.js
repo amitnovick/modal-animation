@@ -186,7 +186,7 @@ const performLastInvertPlayWithBorderRadius = ({
 };
 
 const getDuration = () => {
-  return window.matchMedia("(max-width: 767px)").matches ? 200 : 150;
+  return window.matchMedia("(max-width: 767px)").matches ? 2000 : 1500;
 };
 
 const applyStylesPx = ({ element, styles }) => {
@@ -664,7 +664,20 @@ const Gallery = () => {
                 imageDescription
               }
             ]) => (
-              <Link to={`/details/${itemId}`} key={itemId}>
+              <Link
+                to={`/details/${itemId}`}
+                key={itemId}
+                onClick={event => {
+                  event.preventDefault(); // prevent default navigation
+                  if (state.matches("closed")) {
+                    send("OPEN_MODAL");
+                    setExtendedState(previous => ({
+                      ...previous,
+                      chosenItemId: itemId
+                    }));
+                  }
+                }}
+              >
                 <div className="image-container">
                   <img
                     key={itemId}
@@ -672,16 +685,6 @@ const Gallery = () => {
                     className="image"
                     src={imageSrc}
                     alt={imageDescription}
-                    onClick={event => {
-                      event.preventDefault(); // prevent default navigation
-                      if (state.matches("closed")) {
-                        send("OPEN_MODAL");
-                        setExtendedState(previous => ({
-                          ...previous,
-                          chosenItemId: itemId
-                        }));
-                      }
-                    }}
                   />
                 </div>
               </Link>

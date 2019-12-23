@@ -13,7 +13,7 @@ function usePortal() {
 
     return () => {
       if (portalRef.current) {
-        document.removeChild(portalRef.current);
+        elToMountTo.removeChild(portalRef.current);
       }
     };
   }, [portalRef, elToMountTo]);
