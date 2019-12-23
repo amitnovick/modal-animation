@@ -280,7 +280,7 @@ const Gallery = () => {
         window.history.pushState({}, "Details", `/details/${chosenItemId}`);
       },
       updateUrlToGalleryPage: () => {
-        window.history.pushState({}, "Gallery", `/`);
+        window.history.replaceState({}, "Gallery", `/`);
       },
       removeImageElement: () => {
         if (imageCloneElRef.current && modalCardRef.current) {
