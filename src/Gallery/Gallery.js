@@ -186,7 +186,7 @@ const performLastInvertPlayWithBorderRadius = ({
 };
 
 const getDuration = () => {
-  return window.matchMedia("(max-width: 767px)").matches ? 300 : 200;
+  return window.matchMedia("(max-width: 767px)").matches ? 200 : 150;
 };
 
 const applyStylesPx = ({ element, styles }) => {
@@ -251,10 +251,14 @@ const Gallery = () => {
 
   const cropDivAnimationRef = React.useRef();
   const imageAnimationRef = React.useRef();
-  const modalContentAnimationRef = React.useRef();
+  const modalCardAnimationRef = React.useRef();
+  const modalContentOpacityAnimationRef = React.useRef();
 
   const modalOverlayAnimationRef = React.useRef();
+  const modalCardRef = React.useRef();
   const modalContentRef = React.useRef();
+
+  const imageCloneElRef = React.useRef();
 
   const gridImagesRef = React.useRef(
     Object.keys(extendedState.items).reduce(
@@ -277,6 +281,14 @@ const Gallery = () => {
       },
       updateUrlToGalleryPage: () => {
         window.history.pushState({}, "Gallery", `/`);
+      },
+      removeImageElement: () => {
+        if (imageCloneElRef.current && modalCardRef.current) {
+          document.body.removeChild(imageCloneElRef.current);
+        }
+      },
+      cancelOpacityAnimation: () => {
+        modalContentOpacityAnimationRef.current.cancel();
       }
     }
   });
@@ -325,7 +337,7 @@ const Gallery = () => {
         cropDivAnimationRef.current = animation;
 
         /*** <portalModalCardRef> ***/
-        const lastModalContentRect = modalContentRef.current.getBoundingClientRect();
+        const lastModalContentRect = modalCardRef.current.getBoundingClientRect();
 
         applyStylesPx({
           element: portalModalCardRef.current,
@@ -337,12 +349,13 @@ const Gallery = () => {
           }
         });
 
-        modalContentAnimationRef.current = performLastInvertPlay({
+        modalCardAnimationRef.current = performLastInvertPlay({
           element: portalModalCardRef.current,
           first: firstImageRect,
           last: lastModalContentRect,
           duration: duration
         });
+
         /*** </portalModalCardRef> ***/
 
         /*** <portalImageRef> ***/
@@ -419,7 +432,7 @@ const Gallery = () => {
         imageAnimationRef.current.reverse();
 
         modalOverlayAnimationRef.current.reverse();
-        modalContentAnimationRef.current.reverse();
+        modalCardAnimationRef.current.reverse();
       } else if (
         state.matches("opened->closed") &&
         previousState.matches("opened")
@@ -472,7 +485,7 @@ const Gallery = () => {
 
         performLastInvertPlayWithBorderRadius({
           element: portalModalCardRef.current,
-          first: modalContentRef.current.getBoundingClientRect(),
+          first: modalCardRef.current.getBoundingClientRect(),
           last: lastImageRect,
           duration: duration
         });
@@ -541,6 +554,44 @@ const Gallery = () => {
             easing: "linear"
           }
         );
+      } else if (
+        state.matches("opened.transparentControls") &&
+        previousState.matches("closed->opened")
+      ) {
+        if (modalCardRef.current) {
+          const imageCloneEl = modalImageRef.current.cloneNode(false);
+          imageCloneEl.style.position = "fixed";
+          const modalImageRect = modalImageRef.current.getBoundingClientRect();
+          applyStylesPx({
+            element: imageCloneEl,
+            styles: {
+              top: modalImageRect.top,
+              left: modalImageRect.left,
+              width: modalImageRect.width,
+              height: modalImageRect.height
+            }
+          });
+          imageCloneElRef.current = imageCloneEl;
+          document.body.appendChild(imageCloneEl);
+        }
+        const modalContentOpacityAnimation = modalContentRef.current.animate(
+          [
+            {
+              opacity: 0
+            },
+            { opacity: 1 }
+          ],
+          {
+            duration: 150,
+            easing: "linear"
+          }
+        );
+
+        modalContentOpacityAnimation.onfinish = () => {
+          send("FINISH_OPACITY_ANIMATION");
+        };
+
+        modalContentOpacityAnimationRef.current = modalContentOpacityAnimation;
       }
     }
   }, [state.value]);
@@ -644,6 +695,7 @@ const Gallery = () => {
             closeModal={() => send("CLOSE_MODAL")}
             modalImageRef={modalImageRef}
             modalOverlayRef={modalOverlayRef}
+            modalCardRef={modalCardRef}
             modalContentRef={modalContentRef}
           />
         </ModalPortal>

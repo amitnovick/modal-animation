@@ -20,6 +20,16 @@ const machine = Machine({
       exit: "updateUrlToGalleryPage",
       on: {
         CLOSE_MODAL: "opened->closed"
+      },
+      initial: "transparentControls",
+      states: {
+        transparentControls: {
+          exit: ["removeImageElement", "cancelOpacityAnimation"],
+          on: {
+            FINISH_OPACITY_ANIMATION: "opaqueControls"
+          }
+        },
+        opaqueControls: {}
       }
     },
     "opened->closed": {
