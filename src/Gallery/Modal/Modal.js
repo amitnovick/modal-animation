@@ -24,6 +24,7 @@ const Modal = React.memo(
       if (isOpen) {
         const listener = ({ target }) => {
           if (!modalCardRef.current.contains(target)) {
+            window.history.back();
             closeModal();
           }
         };
@@ -69,13 +70,21 @@ const Modal = React.memo(
                 <div className={styles["modal-top-bar"]}>
                   <button
                     className={styles["left-arrow-button"]}
-                    onClick={closeModal}
+                    onClick={() => {
+                      window.history.back();
+
+                      closeModal();
+                    }}
                   >
                     <FontAwesomeIcon icon={faArrowLeft} />
                   </button>
                   <button
                     className={styles["back-button"]}
-                    onClick={closeModal}
+                    onClick={() => {
+                      window.history.back();
+
+                      closeModal();
+                    }}
                   >
                     Back
                   </button>
@@ -97,7 +106,11 @@ const Modal = React.memo(
                   </div>
                   <button
                     className={styles["close-button"]}
-                    onClick={closeModal}
+                    onClick={() => {
+                      window.history.back();
+
+                      closeModal();
+                    }}
                   >
                     <FontAwesomeIcon icon={faTimes} />
                   </button>

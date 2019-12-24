@@ -16,8 +16,6 @@ const machine = Machine({
       }
     },
     opened: {
-      entry: "updateUrlToDetailsPage",
-      exit: "updateUrlToGalleryPage",
       on: {
         CLOSE_MODAL: "opened->closed"
       },

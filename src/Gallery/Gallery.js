@@ -1,7 +1,7 @@
 import React from "react";
 import "normalize.css";
 import { useMachine } from "@xstate/react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useHistory, matchPath } from "react-router-dom";
 
 import "./index.scss";
 import Modal from "./Modal/Modal";
@@ -233,6 +233,13 @@ const fitObjectCover = ({ imageIntrinsicDimensions, rectangleDimensions }) => {
   }
 };
 
+const resolveMatch = ({ address, pattern }) => {
+  return matchPath(address, {
+    path: pattern,
+    isExact: true
+  });
+};
+
 const Gallery = () => {
   const [extendedState, setExtendedState] = React.useState({
     items: initialItems,
@@ -273,15 +280,13 @@ const Gallery = () => {
   const modalOverlayRef = React.useRef();
   const modalImageRef = React.useRef();
 
+  const history = useHistory();
+
+  console.log("history:", history);
+
   const [state, send] = useMachine(machine, {
     devTools: true,
     actions: {
-      updateUrlToDetailsPage: () => {
-        window.history.pushState({}, "Details", `/details/${chosenItemId}`);
-      },
-      updateUrlToGalleryPage: () => {
-        window.history.replaceState({}, "Gallery", `/`);
-      },
       removeImageElement: () => {
         if (imageCloneElRef.current && modalCardRef.current) {
           document.body.removeChild(imageCloneElRef.current);
@@ -292,6 +297,38 @@ const Gallery = () => {
       }
     }
   });
+
+  const location = useLocation();
+  const previousLocation = usePrevious(location);
+
+  const { pathname } = location;
+
+  React.useEffect(() => {
+    if (previousLocation !== undefined) {
+      const previousMatching = resolveMatch({
+        address: previousLocation.pathname,
+        pattern: "/"
+      });
+      const currentMatching = resolveMatch({
+        address: pathname,
+        pattern: "/details/:id"
+      });
+      if (
+        previousMatching !== null &&
+        previousMatching.isExact === true &&
+        currentMatching !== null &&
+        currentMatching.isExact === true
+      ) {
+        const { params } = currentMatching;
+        setExtendedState(previous => ({
+          // This is needed because we could have left the website and lost the state, then came back to this URL (pressing Forward)
+          ...previous,
+          chosenItemId: params.id
+        }));
+        send("OPEN_MODAL");
+      }
+    }
+  }, [pathname]);
 
   const previousState = usePrevious(state);
 
@@ -629,6 +666,7 @@ const Gallery = () => {
   React.useEffect(() => {
     if (isOpeningModal) {
       const listener = () => {
+        window.history.back();
         send("CLOSE_MODAL");
       };
 
@@ -670,11 +708,16 @@ const Gallery = () => {
                 onClick={event => {
                   event.preventDefault(); // prevent default navigation
                   if (state.matches("closed")) {
-                    send("OPEN_MODAL");
                     setExtendedState(previous => ({
                       ...previous,
                       chosenItemId: itemId
                     }));
+                    send("OPEN_MODAL");
+                    window.history.pushState(
+                      {},
+                      "Details",
+                      `/details/${itemId}`
+                    );
                   }
                 }}
               >
