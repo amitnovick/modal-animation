@@ -193,7 +193,7 @@ const performLastInvertPlayWithBorderRadius = ({
 };
 
 const getDuration = () => {
-  return window.matchMedia("(max-width: 767px)").matches ? 2000 : 1500;
+  return window.matchMedia("(max-width: 767px)").matches ? 200 : 150;
 };
 
 const applyStylesPx = ({ element, styles }) => {
@@ -249,8 +249,8 @@ const Gallery = () => {
 
   const { items, chosenItemId, hasFinishedLoading } = extendedState;
 
-  const TransitionElementPortal = usePortal();
-  const ModalPortal = usePortal();
+  const [FloatingElementsPortal, floatingElementsPortalElRef] = usePortal();
+  const [ModalPortal] = usePortal();
 
   const portalImageRef = React.useRef();
   const portalCropDivRef = React.useRef();
@@ -284,9 +284,9 @@ const Gallery = () => {
     devTools: true,
     actions: {
       removeImageElement: () => {
-        if (imageCloneElRef.current && modalCardRef.current) {
-          document.body.removeChild(imageCloneElRef.current);
-        }
+        floatingElementsPortalElRef.current.removeChild(
+          imageCloneElRef.current
+        );
       },
       cancelOpacityAnimation: () => {
         modalContentOpacityAnimationRef.current.cancel();
@@ -537,7 +537,13 @@ const Gallery = () => {
       ) {
         if (modalCardRef.current) {
           const imageCloneEl = modalImageRef.current.cloneNode(false);
-          imageCloneEl.style.position = "fixed";
+          applyStyles({
+            element: imageCloneEl,
+            styles: {
+              position: "fixed",
+              zIndex: 10000
+            }
+          });
           const modalImageRect = modalImageRef.current.getBoundingClientRect();
           applyStylesPx({
             element: imageCloneEl,
@@ -548,8 +554,8 @@ const Gallery = () => {
               height: modalImageRect.height
             }
           });
+          floatingElementsPortalElRef.current.appendChild(imageCloneEl);
           imageCloneElRef.current = imageCloneEl;
-          document.body.appendChild(imageCloneEl);
         }
         const modalContentOpacityAnimation = modalContentRef.current.animate(
           [
@@ -624,9 +630,6 @@ const Gallery = () => {
   );
   console.log("*** </App RENDER> ***");
 
-  const shouldDisplayPortalImage =
-    state.matches("opening") || state.matches("closing");
-
   if (!hasFinishedLoading) {
     return <h2> Loading... </h2>;
   } else {
@@ -680,8 +683,8 @@ const Gallery = () => {
             modalContentRef={modalContentRef}
           />
         </ModalPortal>
-        <TransitionElementPortal>
-          {shouldDisplayPortalImage ? (
+        <FloatingElementsPortal>
+          {state.matches("opening") || state.matches("closing") ? (
             <>
               <div
                 ref={portalCropDivRef}
@@ -704,7 +707,7 @@ const Gallery = () => {
               />
             </>
           ) : null}
-        </TransitionElementPortal>
+        </FloatingElementsPortal>
       </>
     );
   }

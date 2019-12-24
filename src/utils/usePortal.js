@@ -2,32 +2,28 @@ import React from "react";
 import { createPortal } from "react-dom";
 
 function usePortal() {
-  const portalRef = React.useRef(document.createElement("div"));
-
-  const elToMountTo = React.useMemo(() => {
-    return document.body;
-  }, []);
+  const portalElRef = React.useRef(document.createElement("div"));
 
   React.useEffect(() => {
-    elToMountTo.appendChild(portalRef.current);
+    document.body.appendChild(portalElRef.current);
 
     return () => {
-      if (portalRef.current) {
-        elToMountTo.removeChild(portalRef.current);
+      if (portalElRef.current) {
+        document.body.removeChild(portalElRef.current);
       }
     };
-  }, [portalRef, elToMountTo]);
+  }, [portalElRef]);
 
   const Portal = React.useCallback(
     ({ children }) => {
-      if (portalRef.current != null)
-        return createPortal(children, portalRef.current);
+      if (portalElRef.current != null)
+        return createPortal(children, portalElRef.current);
       return null;
     },
-    [portalRef]
+    [portalElRef]
   );
 
-  return Portal;
+  return [Portal, portalElRef];
 }
 
 export default usePortal;
