@@ -12,6 +12,7 @@
     "react": "^16.10.1",
     "react-dom": "^16.10.1",
     "react-scripts": "^3.3.0",
+    "web-animations-js": "^2.3.2",
     "xstate": "^4.7.0"
   },
   "scripts": {
