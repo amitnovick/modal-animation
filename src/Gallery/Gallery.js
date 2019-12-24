@@ -81,7 +81,8 @@ const performLastInvertPlay = ({ element, last, first, duration }) => {
     {
       // timing options
       duration: duration,
-      easing: "linear"
+      easing: "linear",
+      fill: "both"
     }
   );
 
@@ -140,7 +141,8 @@ const performCustomEasingCounterScaleTransition = ({
   const animation = element.animate(keyframes, {
     // timing options
     duration: duration,
-    easing: "linear"
+    easing: "linear",
+    fill: "both"
   });
 
   return animation;
@@ -185,7 +187,8 @@ const performLastInvertPlayWithBorderRadius = ({
     ],
     {
       duration: duration,
-      easing: "linear"
+      easing: "linear",
+      fill: "both"
     }
   );
 
@@ -427,7 +430,8 @@ const Gallery = () => {
           ],
           {
             duration: duration,
-            easing: "linear"
+            easing: "linear",
+            fill: "both"
           }
         );
       } else if (state.matches("closing") && previousState.matches("opening")) {
@@ -544,7 +548,8 @@ const Gallery = () => {
           ],
           {
             duration: duration,
-            easing: "linear"
+            easing: "linear",
+            fill: "both"
           }
         );
       } else if (
@@ -582,7 +587,8 @@ const Gallery = () => {
           ],
           {
             duration: getOpacityTransitionDuration(),
-            easing: "linear"
+            easing: "linear",
+            fill: "both"
           }
         );
 
