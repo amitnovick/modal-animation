@@ -193,7 +193,7 @@ const performLastInvertPlayWithBorderRadius = ({
 };
 
 const getImageTransitionDuration = () => {
-  if (window.matchMedia("prefers-reduced-motion: reduce").matches) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return 0;
   } else {
     if (window.matchMedia("(max-width: 767px)").matches) {
@@ -205,7 +205,7 @@ const getImageTransitionDuration = () => {
 };
 
 const getOpacityTransitionDuration = () => {
-  if (window.matchMedia("prefers-reduced-motion: reduce").matches) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return 0;
   } else {
     return 150;
