@@ -46,8 +46,7 @@ const Modal = React.memo(
               ref={modalCardRef}
               style={{
                 visibility:
-                  modalState.matches("opened->closed") ||
-                  modalState.matches("closed->opened")
+                  modalState.matches("closing") || modalState.matches("opening")
                     ? "hidden"
                     : undefined
               }}

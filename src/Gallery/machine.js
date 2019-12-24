@@ -6,18 +6,18 @@ const machine = Machine({
   states: {
     closed: {
       on: {
-        OPEN_MODAL: "closed->opened"
+        OPEN_MODAL: "opening"
       }
     },
-    "closed->opened": {
+    opening: {
       on: {
         FINISHED_SLIDE_IN_ANIMATION: "opened",
-        CLOSE_MODAL: "opened->closed"
+        CLOSE_MODAL: "closing"
       }
     },
     opened: {
       on: {
-        CLOSE_MODAL: "opened->closed"
+        CLOSE_MODAL: "closing"
       },
       initial: "transparentControls",
       states: {
@@ -30,7 +30,7 @@ const machine = Machine({
         opaqueControls: {}
       }
     },
-    "opened->closed": {
+    closing: {
       on: {
         FINISHED_SLIDE_OUT_ANIMATION: "closed"
       }

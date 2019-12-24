@@ -290,7 +290,7 @@ const Gallery = () => {
 
   React.useLayoutEffect(() => {
     if (previousState) {
-      if (state.matches("closed->opened") && previousState.matches("closed")) {
+      if (state.matches("opening") && previousState.matches("closed")) {
         const lastImageRect = modalImageRef.current.getBoundingClientRect();
 
         portalImageRef.current.style.position = "absolute";
@@ -415,10 +415,7 @@ const Gallery = () => {
             easing: "linear"
           }
         );
-      } else if (
-        state.matches("opened->closed") &&
-        previousState.matches("closed->opened")
-      ) {
+      } else if (state.matches("closing") && previousState.matches("opening")) {
         cropDivAnimationRef.current.onfinish = () =>
           send("FINISHED_SLIDE_OUT_ANIMATION");
         cropDivAnimationRef.current.reverse();
@@ -426,10 +423,7 @@ const Gallery = () => {
 
         modalOverlayAnimationRef.current.reverse();
         modalCardAnimationRef.current.reverse();
-      } else if (
-        state.matches("opened->closed") &&
-        previousState.matches("opened")
-      ) {
+      } else if (state.matches("closing") && previousState.matches("opened")) {
         const lastImageRect = gridImagesRef.current[
           chosenItemId
         ].current.getBoundingClientRect();
@@ -549,7 +543,7 @@ const Gallery = () => {
         );
       } else if (
         state.matches("opened.transparentControls") &&
-        previousState.matches("closed->opened")
+        previousState.matches("opening")
       ) {
         if (modalCardRef.current) {
           const imageCloneEl = modalImageRef.current.cloneNode(false);
@@ -617,7 +611,7 @@ const Gallery = () => {
     return () => window.removeEventListener("keydown", listener);
   }, []);
 
-  const isOpeningModal = state.matches("closed->opened");
+  const isOpeningModal = state.matches("opening");
 
   React.useEffect(() => {
     if (isOpeningModal) {
@@ -641,7 +635,7 @@ const Gallery = () => {
   console.log("*** </App RENDER> ***");
 
   const shouldDisplayPortalImage =
-    state.matches("closed->opened") || state.matches("opened->closed");
+    state.matches("opening") || state.matches("closing");
 
   if (!hasFinishedLoading) {
     return <h2> Loading... </h2>;
