@@ -192,8 +192,24 @@ const performLastInvertPlayWithBorderRadius = ({
   return animation;
 };
 
-const getDuration = () => {
-  return window.matchMedia("(max-width: 767px)").matches ? 200 : 150;
+const getImageTransitionDuration = () => {
+  if (window.matchMedia("prefers-reduced-motion: reduce").matches) {
+    return 0;
+  } else {
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      return 200; // mobile
+    } else {
+      return 150; // desktop
+    }
+  }
+};
+
+const getOpacityTransitionDuration = () => {
+  if (window.matchMedia("prefers-reduced-motion: reduce").matches) {
+    return 0;
+  } else {
+    return 150;
+  }
 };
 
 const applyStylesPx = ({ element, styles }) => {
@@ -322,7 +338,7 @@ const Gallery = () => {
         });
         /*** </cropDivRef> ***/
 
-        const duration = getDuration();
+        const duration = getImageTransitionDuration();
 
         const firstImageRect = gridImagesRef.current[
           chosenItemId
@@ -449,7 +465,7 @@ const Gallery = () => {
         const modalImageRect = modalImageRef.current.getBoundingClientRect();
         const firstImageRect = modalImageRect;
 
-        const duration = getDuration();
+        const duration = getImageTransitionDuration();
         const animation = performLastInvertPlay({
           element: portalCropDivRef.current,
           first: firstImageRect,
@@ -565,7 +581,7 @@ const Gallery = () => {
             { opacity: 1 }
           ],
           {
-            duration: 150,
+            duration: getOpacityTransitionDuration(),
             easing: "linear"
           }
         );
