@@ -2,7 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { useHistory } from "react-router-dom";
 
 import styles from "./styles.module.scss";
 
@@ -16,15 +15,12 @@ const Modal = React.memo(
     modalCardRef,
     modalContentRef
   }) => {
-    const history = useHistory();
-
     const isOpen = modalState.matches("opened");
 
     React.useEffect(() => {
       if (isOpen) {
         const listener = ({ target }) => {
           if (!modalCardRef.current.contains(target)) {
-            window.history.back();
             closeModal();
           }
         };
@@ -33,16 +29,6 @@ const Modal = React.memo(
 
         return () => window.removeEventListener("mousedown", listener);
       }
-    }, [isOpen]);
-
-    React.useEffect(() => {
-      const unlisten = history.listen((_, action) => {
-        if (isOpen && action === "POP") {
-          closeModal();
-        }
-      });
-
-      return () => unlisten();
     }, [isOpen]);
 
     return (
@@ -70,21 +56,13 @@ const Modal = React.memo(
                 <div className={styles["modal-top-bar"]}>
                   <button
                     className={styles["left-arrow-button"]}
-                    onClick={() => {
-                      window.history.back();
-
-                      closeModal();
-                    }}
+                    onClick={closeModal}
                   >
                     <FontAwesomeIcon icon={faArrowLeft} />
                   </button>
                   <button
                     className={styles["back-button"]}
-                    onClick={() => {
-                      window.history.back();
-
-                      closeModal();
-                    }}
+                    onClick={closeModal}
                   >
                     Back
                   </button>
@@ -106,11 +84,7 @@ const Modal = React.memo(
                   </div>
                   <button
                     className={styles["close-button"]}
-                    onClick={() => {
-                      window.history.back();
-
-                      closeModal();
-                    }}
+                    onClick={closeModal}
                   >
                     <FontAwesomeIcon icon={faTimes} />
                   </button>
