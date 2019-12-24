@@ -90,15 +90,23 @@ const performLastInvertPlay = ({ element, last, first, duration }) => {
 
 const performCustomEasingCounterScaleTransition = ({
   element,
-  scaleX,
-  scaleY,
-  firstLeft,
-  lastLeft,
-  firstTop,
-  lastTop,
-  imageTransitionScaleFactor,
+  firstImageRect,
+  lastImageRect,
+  firstScaledImage,
+  lastScaledImage,
   duration
 }) => {
+  const imageTransitionScaleFactor =
+    firstScaledImage.height / lastScaledImage.height;
+
+  const scaleX = firstImageRect.width / lastImageRect.width;
+  const scaleY = firstImageRect.height / lastImageRect.height;
+
+  const firstLeft = -(firstScaledImage.width - firstImageRect.width) / 2;
+  const lastLeft = -(lastScaledImage.width - lastImageRect.width) / 2;
+  const firstTop = -(firstScaledImage.height - firstImageRect.height) / 2;
+  const lastTop = -(lastScaledImage.height - lastImageRect.height) / 2;
+
   const keyframes = Array(101)
     .fill(0)
     .map((_, i) => i)
@@ -384,21 +392,12 @@ const Gallery = () => {
           }
         });
 
-        const scaleW = firstImageRect.width / lastImageRect.width;
-        const scaleH = firstImageRect.height / lastImageRect.height;
-
-        const imageTransitionScaleFactor =
-          firstScaledImage.height / lastScaledImage.height;
-
         imageAnimationRef.current = performCustomEasingCounterScaleTransition({
           element: portalImageRef.current,
-          scaleX: scaleW,
-          scaleY: scaleH,
-          imageTransitionScaleFactor: imageTransitionScaleFactor,
-          firstLeft: -(firstScaledImage.width - firstImageRect.width) / 2,
-          lastLeft: -(lastScaledImage.width - lastImageRect.width) / 2,
-          firstTop: -(firstScaledImage.height - firstImageRect.height) / 2,
-          lastTop: -(lastScaledImage.height - lastImageRect.height) / 2,
+          firstImageRect: firstImageRect,
+          lastImageRect: lastImageRect,
+          firstScaledImage: firstScaledImage,
+          lastScaledImage: lastScaledImage,
           duration: duration
         });
         /*** </portalImageRef> ***/
@@ -510,21 +509,12 @@ const Gallery = () => {
           }
         });
 
-        const scaleW = firstImageRect.width / lastImageRect.width;
-        const scaleH = firstImageRect.height / lastImageRect.height;
-
-        const imageTransitionScaleFactor =
-          firstScaledImage.height / lastScaledImage.height;
-
         performCustomEasingCounterScaleTransition({
           element: portalImageRef.current,
-          scaleX: scaleW,
-          scaleY: scaleH,
-          imageTransitionScaleFactor: imageTransitionScaleFactor,
-          firstLeft: -(firstScaledImage.width - firstImageRect.width) / 2,
-          lastLeft: -(lastScaledImage.width - lastImageRect.width) / 2,
-          firstTop: -(firstScaledImage.height - firstImageRect.height) / 2,
-          lastTop: -(lastScaledImage.height - lastImageRect.height) / 2,
+          firstImageRect: firstImageRect,
+          lastImageRect: lastImageRect,
+          firstScaledImage: firstScaledImage,
+          lastScaledImage: lastScaledImage,
           duration: duration
         });
         /*** </portalImageRef> ***/
