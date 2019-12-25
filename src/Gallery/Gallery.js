@@ -553,7 +553,7 @@ const Gallery = () => {
           }
         );
       } else if (
-        state.matches("opened.transparentControls") &&
+        state.matches("opened.controlsFadingIn") &&
         previousState.matches("opening")
       ) {
         if (modalCardRef.current) {

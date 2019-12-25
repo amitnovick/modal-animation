@@ -19,15 +19,15 @@ const machine = Machine({
       on: {
         CLOSE_MODAL: "closing"
       },
-      initial: "transparentControls",
+      initial: "controlsFadingIn",
       states: {
-        transparentControls: {
+        controlsFadingIn: {
           exit: ["removeImageElement", "cancelOpacityAnimation"],
           on: {
-            FINISH_OPACITY_ANIMATION: "opaqueControls"
+            FINISH_OPACITY_ANIMATION: "controlsSettled"
           }
         },
-        opaqueControls: {}
+        controlsSettled: {}
       }
     },
     closing: {
