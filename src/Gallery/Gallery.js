@@ -285,7 +285,7 @@ const Gallery = () => {
   const modalCardRef = React.useRef();
   const modalContentRef = React.useRef();
 
-  const imageCloneElRef = React.useRef();
+  const openedModalImageCloneRef = React.useRef();
 
   const gridImagesRef = React.useRef(
     Object.keys(extendedState.items).reduce(
@@ -557,16 +557,14 @@ const Gallery = () => {
             modalImageRef.current
           );
           applyStyles({
-            element: imageCloneElRef.current,
+            element: openedModalImageCloneRef.current,
             styles: {
-              objectFit: modalImageComputedStyle.getPropertyValue("object-fit"),
-              position: "fixed",
-              zIndex: 10000
+              objectFit: modalImageComputedStyle.getPropertyValue("object-fit")
             }
           });
           const modalImageRect = modalImageRef.current.getBoundingClientRect();
           applyStylesPx({
-            element: imageCloneElRef.current,
+            element: openedModalImageCloneRef.current,
             styles: {
               top: modalImageRect.top,
               left: modalImageRect.left,
@@ -726,7 +724,7 @@ const Gallery = () => {
           ) : null}
           {state.matches("opened.controlsFadingIn") ? (
             <img
-              ref={imageCloneElRef}
+              ref={openedModalImageCloneRef}
               className="opened-modal-image-clone"
               src={items[chosenItemId].image.src}
               alt=""

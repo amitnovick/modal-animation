@@ -97,4 +97,6 @@ body {
 }
 
 .opened-modal-image-clone {
+  position: fixed;
+  z-index: $portalModalCardZindex + 2;
 }
