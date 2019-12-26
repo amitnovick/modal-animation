@@ -269,8 +269,8 @@ const Gallery = () => {
 
   const { items, chosenItemId, hasFinishedLoading } = extendedState;
 
-  const [FloatingElementsPortal, floatingElementsPortalElRef] = usePortal();
-  const [ModalPortal] = usePortal();
+  const FloatingElementsPortal = usePortal();
+  const ModalPortal = usePortal();
 
   const portalImageRef = React.useRef();
   const portalCropDivRef = React.useRef();
@@ -303,11 +303,6 @@ const Gallery = () => {
   const [state, send] = useMachine(machine, {
     devTools: true,
     actions: {
-      removeImageElement: () => {
-        floatingElementsPortalElRef.current.removeChild(
-          imageCloneElRef.current
-        );
-      },
       cancelOpacityAnimation: () => {
         modalContentOpacityAnimationRef.current.cancel();
       }
@@ -558,17 +553,20 @@ const Gallery = () => {
         previousState.matches("opening")
       ) {
         if (modalCardRef.current) {
-          const imageCloneEl = modalImageRef.current.cloneNode(false);
+          const modalImageComputedStyle = window.getComputedStyle(
+            modalImageRef.current
+          );
           applyStyles({
-            element: imageCloneEl,
+            element: imageCloneElRef.current,
             styles: {
+              objectFit: modalImageComputedStyle.getPropertyValue("object-fit"),
               position: "fixed",
               zIndex: 10000
             }
           });
           const modalImageRect = modalImageRef.current.getBoundingClientRect();
           applyStylesPx({
-            element: imageCloneEl,
+            element: imageCloneElRef.current,
             styles: {
               top: modalImageRect.top,
               left: modalImageRect.left,
@@ -576,8 +574,6 @@ const Gallery = () => {
               height: modalImageRect.height
             }
           });
-          floatingElementsPortalElRef.current.appendChild(imageCloneEl);
-          imageCloneElRef.current = imageCloneEl;
         }
         const modalContentOpacityAnimation = modalContentRef.current.animate(
           [
@@ -715,11 +711,7 @@ const Gallery = () => {
         <FloatingElementsPortal>
           {state.matches("opening") || state.matches("closing") ? (
             <>
-              <div
-                ref={portalCropDivRef}
-                className="portal-crop-div"
-                style={{ position: "fixed", zIndex: 1001 }} // zIndex must be greater than `portal-modal-card`
-              >
+              <div ref={portalCropDivRef} className="portal-crop-div">
                 <div className="portal-image-wrapper">
                   <img
                     className="image"
@@ -729,12 +721,16 @@ const Gallery = () => {
                   />
                 </div>
               </div>
-              <div
-                className="portal-modal-card"
-                ref={portalModalCardRef}
-                style={{ zIndex: 1000 }}
-              />
+              <div className="portal-modal-card" ref={portalModalCardRef} />
             </>
+          ) : null}
+          {state.matches("opened.controlsFadingIn") ? (
+            <img
+              ref={imageCloneElRef}
+              className="opened-modal-image-clone"
+              src={items[chosenItemId].image.src}
+              alt=""
+            />
           ) : null}
         </FloatingElementsPortal>
       </>

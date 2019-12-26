@@ -23,7 +23,7 @@ function usePortal() {
     [portalElRef]
   );
 
-  return [Portal, portalElRef];
+  return Portal;
 }
 
 export default usePortal;

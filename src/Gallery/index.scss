@@ -1,3 +1,5 @@
+$portalModalCardZindex: 1000;
+
 @import url("https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap");
 
 body {
@@ -38,11 +40,15 @@ body {
 
   background-color: rgb(255, 255, 255);
   border-radius: 8px;
+
+  z-index: $portalModalCardZindex;
 }
 
 .portal-crop-div {
   position: fixed;
   display: none;
+
+  z-index: $portalModalCardZindex + 1;
 }
 
 .portal-image-wrapper {
@@ -88,4 +94,7 @@ body {
   align-items: center;
   justify-content: center;
   margin-bottom: 2rem;
+}
+
+.opened-modal-image-clone {
 }

@@ -22,7 +22,7 @@ const machine = Machine({
       initial: "controlsFadingIn",
       states: {
         controlsFadingIn: {
-          exit: ["removeImageElement", "cancelOpacityAnimation"],
+          exit: "cancelOpacityAnimation",
           on: {
             FINISH_OPACITY_ANIMATION: "controlsSettled"
           }
