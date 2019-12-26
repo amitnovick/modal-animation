@@ -8,6 +8,7 @@ import machine from "./machine";
 import usePortal from "../utils/usePortal";
 import usePrevious from "../utils/usePrevious";
 import initialItems from "../items";
+import natureImage from "./nature-image.jpg";
 
 function preloadImage(url) {
   return new Promise(resolve => {
@@ -657,6 +658,12 @@ const Gallery = () => {
   } else {
     return (
       <>
+        <div className="heading">
+          <div className="image-icon-wrapper">
+            <img className="image-icon" src={natureImage} alt="nature" />
+          </div>
+          <h1 className="gallery-title">#nature</h1>
+        </div>
         <div className="grid">
           {Object.entries(items).map(
             ([

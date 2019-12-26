@@ -14,7 +14,7 @@ body {
   min-width: 300px; /* Text shouldn't overflow */
   max-width: 960px;
 
-  margin: 10rem auto 0 auto;
+  margin: 0 auto 0 auto;
 
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -56,4 +56,36 @@ body {
   border: none;
   background: transparent;
   outline: none;
+}
+
+.gallery-title {
+  text-align: center;
+  letter-spacing: 0.1rem;
+}
+
+.image-icon {
+  object-fit: cover;
+  width: auto;
+  height: 100%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.image-icon-wrapper {
+  display: block;
+  height: 10vh;
+  width: 10vh;
+  position: relative;
+  overflow: hidden;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
 }
