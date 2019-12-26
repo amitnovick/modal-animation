@@ -638,15 +638,6 @@ const Gallery = () => {
     }
   }, [isOpeningModal]);
 
-  console.log("*** <App RENDER> ***");
-  console.log("extendedState:", extendedState);
-  console.log("state.value:", state.value);
-  console.log(
-    "previous state.value:",
-    previousState ? previousState.value : undefined
-  );
-  console.log("*** </App RENDER> ***");
-
   if (!hasFinishedLoading) {
     return <h2> Loading... </h2>;
   } else {
