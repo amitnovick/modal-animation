@@ -636,6 +636,22 @@ const Gallery = () => {
     }
   }, [isOpeningModal]);
 
+  React.useLayoutEffect(() => {
+    if (state.matches("opened") && !previousState.matches("opened")) {
+      document.body.style.overflow = "hidden";
+    }
+  }, [state.matches("opened")]);
+
+  React.useLayoutEffect(() => {
+    if (
+      !state.matches("opened") &&
+      previousState !== undefined &&
+      previousState.matches("opened")
+    ) {
+      document.body.style.overflow = "";
+    }
+  }, [state.matches("opened")]);
+
   return (
     <>
       <div className="heading">
