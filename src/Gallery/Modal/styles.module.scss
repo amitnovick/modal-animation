@@ -13,12 +13,10 @@ $modal-content-margin: 14px;
   position: absolute;
   top: 50%;
   left: 50%;
-  right: auto;
-  bottom: auto;
   margin-right: -50%;
   transform: translate(-50%, -50%);
   border-radius: 8px;
-  padding: $modal-content-margin;
+  padding: 0 $modal-content-margin $modal-content-margin $modal-content-margin;
 
   background-color: rgb(255, 255, 255);
   overflow: auto;
@@ -54,6 +52,7 @@ $modal-content-margin: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 6px;
 }
 
 %artist-bar {
@@ -125,6 +124,7 @@ $modal-content-margin: 14px;
 .text {
   max-width: 600px;
   width: 100%;
+  margin-bottom: 0;
 }
 
 @media (max-width: 767px) {
@@ -132,10 +132,6 @@ $modal-content-margin: 14px;
     height: 100%;
     width: 100%;
     border-radius: 0;
-  }
-
-  .modal-top-bar {
-    padding-left: 0;
   }
 
   .close-button {

@@ -286,6 +286,7 @@ const Gallery = () => {
   const modalContentRef = React.useRef();
 
   const openedModalImageCloneRef = React.useRef();
+  const screenRef = React.useRef();
 
   const gridImagesRef = React.useRef(
     Object.keys(extendedState.items).reduce(
@@ -652,8 +653,21 @@ const Gallery = () => {
     }
   }, [state.matches("opened")]);
 
+  React.useLayoutEffect(() => {
+    if (state.matches("opened") && !previousState.matches("opened")) {
+      if (window.matchMedia("(max-width: 767px)").matches) {
+        // only for mobile
+        screenRef.current.style.opacity = 0;
+
+        return () => {
+          screenRef.current.style.opacity = 1;
+        };
+      }
+    }
+  }, [state.matches("opened")]);
+
   return (
-    <>
+    <div ref={screenRef}>
       <div className="heading">
         <div className="image-icon-wrapper">
           <img className="image-icon" src={natureImage} alt="nature" />
@@ -741,7 +755,7 @@ const Gallery = () => {
           />
         ) : null}
       </FloatingElementsPortal>
-    </>
+    </div>
   );
 };
 
