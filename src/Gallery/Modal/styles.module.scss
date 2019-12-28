@@ -1,3 +1,5 @@
+$modal-content-margin: 14px;
+
 .modal-overlay {
   position: fixed;
   top: 0px;
@@ -16,7 +18,7 @@
   margin-right: -50%;
   transform: translate(-50%, -50%);
   border-radius: 8px;
-  padding: 0px;
+  padding: $modal-content-margin;
 
   background-color: rgb(255, 255, 255);
   overflow: auto;
@@ -31,7 +33,6 @@
   font-weight: 700;
   color: black;
   cursor: pointer;
-  margin-right: 4px;
 
   opacity: 0.5;
 
@@ -53,7 +54,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 4px 0 14px;
 }
 
 %artist-bar {
@@ -92,7 +92,7 @@
 }
 
 .image-container {
-  padding: 3px 14px 14px 14px;
+  padding: 3px 0px 14px 0px;
 }
 
 .image {
@@ -116,6 +116,15 @@
 
 .track-metadata-box {
   font-size: 1.5rem;
+}
+
+.text-title {
+  margin: 0;
+}
+
+.text {
+  max-width: 600px;
+  width: 100%;
 }
 
 @media (max-width: 767px) {
@@ -166,7 +175,7 @@
 
   .artist-bar-small-screen {
     display: flex;
-    padding: 16px 0 0 14px;
+    padding: 16px 0 0 0px;
   }
 
   .image-container {

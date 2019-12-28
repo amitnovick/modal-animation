@@ -109,6 +109,13 @@ const Modal = React.memo(
                     alt="artwork"
                   />
                 </div>
+                <h1 className={styles["text-title"]}>Natural nature</h1>
+                <p className={styles["text"]}>
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                  do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                  laboris nisi ut aliquip ex ea commodo consequat.
+                </p>
               </div>
             </div>
           </div>
