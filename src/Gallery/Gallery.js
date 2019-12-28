@@ -316,7 +316,7 @@ const Gallery = () => {
       if (state.matches("opening") && previousState.matches("closed")) {
         const lastImageRect = modalImageRef.current.getBoundingClientRect();
 
-        portalImageRef.current.style.position = "absolute";
+        // portalImageRef.current.style.position = "absolute";
 
         /*** <cropDivRef> ***/
         applyStylesPx({
@@ -703,7 +703,7 @@ const Gallery = () => {
               <div ref={portalCropDivRef} className="portal-crop-div">
                 <div className="portal-image-wrapper">
                   <img
-                    className="image"
+                    className="portal-image"
                     ref={portalImageRef}
                     src={items[chosenItemId].image.src}
                     alt=""
