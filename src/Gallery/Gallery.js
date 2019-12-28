@@ -636,17 +636,17 @@ const Gallery = () => {
     }
   }, [isOpeningModal]);
 
-  if (!hasFinishedLoading) {
-    return <h2> Loading... </h2>;
-  } else {
-    return (
-      <>
-        <div className="heading">
-          <div className="image-icon-wrapper">
-            <img className="image-icon" src={natureImage} alt="nature" />
-          </div>
-          <h1 className="gallery-title">#nature</h1>
+  return (
+    <>
+      <div className="heading">
+        <div className="image-icon-wrapper">
+          <img className="image-icon" src={natureImage} alt="nature" />
         </div>
+        <h1 className="gallery-title">#nature</h1>
+      </div>
+      {!hasFinishedLoading ? (
+        <h2 style={{ textAlign: "center" }}>Loading...</h2>
+      ) : (
         <div className="grid">
           {Object.entries(items).map(
             (
@@ -665,7 +665,7 @@ const Gallery = () => {
                 className="details-button"
                 style={{ "--i": i }}
                 onClick={event => {
-                  event.preventDefault(); // prevent default navigation
+                  event.preventDefault();
                   if (state.matches("closed")) {
                     setExtendedState(previous => ({
                       ...previous,
@@ -688,45 +688,45 @@ const Gallery = () => {
             )
           )}
         </div>
-        <ModalPortal>
-          <Modal
-            item={state.matches("closed") ? null : items[chosenItemId]}
-            modalState={state}
-            closeModal={() => send("CLOSE_MODAL")}
-            modalImageRef={modalImageRef}
-            modalOverlayRef={modalOverlayRef}
-            modalCardRef={modalCardRef}
-            modalContentRef={modalContentRef}
-          />
-        </ModalPortal>
-        <FloatingElementsPortal>
-          {state.matches("opening") || state.matches("closing") ? (
-            <>
-              <div ref={portalCropDivRef} className="portal-crop-div">
-                <div className="portal-image-wrapper">
-                  <img
-                    className="portal-image"
-                    ref={portalImageRef}
-                    src={items[chosenItemId].image.src}
-                    alt=""
-                  />
-                </div>
+      )}
+      <ModalPortal>
+        <Modal
+          item={state.matches("closed") ? null : items[chosenItemId]}
+          modalState={state}
+          closeModal={() => send("CLOSE_MODAL")}
+          modalImageRef={modalImageRef}
+          modalOverlayRef={modalOverlayRef}
+          modalCardRef={modalCardRef}
+          modalContentRef={modalContentRef}
+        />
+      </ModalPortal>
+      <FloatingElementsPortal>
+        {state.matches("opening") || state.matches("closing") ? (
+          <>
+            <div ref={portalCropDivRef} className="portal-crop-div">
+              <div className="portal-image-wrapper">
+                <img
+                  className="portal-image"
+                  ref={portalImageRef}
+                  src={items[chosenItemId].image.src}
+                  alt=""
+                />
               </div>
-              <div className="portal-modal-card" ref={portalModalCardRef} />
-            </>
-          ) : null}
-          {state.matches("opened.controlsFadingIn") ? (
-            <img
-              ref={openedModalImageCloneRef}
-              className="opened-modal-image-clone"
-              src={items[chosenItemId].image.src}
-              alt=""
-            />
-          ) : null}
-        </FloatingElementsPortal>
-      </>
-    );
-  }
+            </div>
+            <div className="portal-modal-card" ref={portalModalCardRef} />
+          </>
+        ) : null}
+        {state.matches("opened.controlsFadingIn") ? (
+          <img
+            ref={openedModalImageCloneRef}
+            className="opened-modal-image-clone"
+            src={items[chosenItemId].image.src}
+            alt=""
+          />
+        ) : null}
+      </FloatingElementsPortal>
+    </>
+  );
 };
 
 export default Gallery;
