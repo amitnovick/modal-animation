@@ -645,7 +645,7 @@ const Gallery = () => {
         <h1 className="gallery-title">#nature</h1>
       </div>
       {!hasFinishedLoading ? (
-        <h2 style={{ textAlign: "center" }}>Loading...</h2>
+        <h2 className="loading">Loading...</h2>
       ) : (
         <div className="grid">
           {Object.entries(items).map(

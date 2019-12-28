@@ -120,3 +120,20 @@ body {
   position: fixed;
   z-index: $portalModalCardZindex + 2;
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.loading {
+  text-align: center;
+  opacity: 0;
+  animation: fadeIn 0.3s;
+  animation-delay: 0.5s;
+  animation-fill-mode: both;
+}
