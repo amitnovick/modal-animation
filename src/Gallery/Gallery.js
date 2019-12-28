@@ -316,8 +316,6 @@ const Gallery = () => {
       if (state.matches("opening") && previousState.matches("closed")) {
         const lastImageRect = modalImageRef.current.getBoundingClientRect();
 
-        // portalImageRef.current.style.position = "absolute";
-
         /*** <cropDivRef> ***/
         applyStylesPx({
           element: portalCropDivRef.current,
@@ -651,17 +649,21 @@ const Gallery = () => {
         </div>
         <div className="grid">
           {Object.entries(items).map(
-            ([
-              itemId,
-              {
-                image: { src: imageSrc },
-                imageDescription
-              }
-            ]) => (
+            (
+              [
+                itemId,
+                {
+                  image: { src: imageSrc },
+                  imageDescription
+                }
+              ],
+              i
+            ) => (
               <button
                 to={`/details/${itemId}`}
                 key={itemId}
                 className="details-button"
+                style={{ "--i": i }}
                 onClick={event => {
                   event.preventDefault(); // prevent default navigation
                   if (state.matches("closed")) {

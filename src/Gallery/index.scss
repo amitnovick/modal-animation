@@ -62,10 +62,26 @@ body {
   position: absolute;
 }
 
+@keyframes slideAndFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .details-button {
   border: none;
   background: transparent;
   outline: none;
+  opacity: 0;
+
+  animation: slideAndFadeIn 0.2s;
+  animation-delay: calc(var(--i) * 40ms);
+  animation-fill-mode: both;
 }
 
 .gallery-title {
