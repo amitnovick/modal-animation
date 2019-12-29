@@ -18,6 +18,14 @@ function preloadImage(url) {
   });
 }
 
+const checkIsMobile = () => {
+  return window.matchMedia("(max-width: 767px)").matches;
+};
+
+const doesPreferReducedMotion = () => {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+};
+
 const fetchAndPreloadImages = async items => {
   const preloadedImages = await Promise.all(
     Object.entries(items).map(([itemId, { imageUrl }]) =>
@@ -197,10 +205,10 @@ const performLastInvertPlayWithBorderRadius = ({
 };
 
 const getImageTransitionDuration = () => {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (doesPreferReducedMotion()) {
     return 0;
   } else {
-    if (window.matchMedia("(max-width: 767px)").matches) {
+    if (checkIsMobile()) {
       return 200; // mobile
     } else {
       return 150; // desktop
@@ -209,7 +217,7 @@ const getImageTransitionDuration = () => {
 };
 
 const getOpacityTransitionDuration = () => {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (doesPreferReducedMotion()) {
     return 0;
   } else {
     return 150;
@@ -655,7 +663,7 @@ const Gallery = () => {
 
   React.useLayoutEffect(() => {
     if (state.matches("opened") && !previousState.matches("opened")) {
-      if (window.matchMedia("(max-width: 767px)").matches) {
+      if (checkIsMobile()) {
         // only for mobile
         screenRef.current.style.opacity = 0;
 
